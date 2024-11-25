@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	nats "github.com/datasance/nats-server/internal/nats"
 	sdk "github.com/datasance/iofog-go-sdk/v3/pkg/microservices"
+	nats "github.com/datasance/nats-server/internal/nats"
 )
 
 var (

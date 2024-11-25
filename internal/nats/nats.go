@@ -19,50 +19,49 @@ type Server struct {
 }
 
 type Config struct {
-	Accounts        []Account    `json:"accounts"`
-	NatsServer      NatsServer   `json:"natsServer"`
+	Accounts   []Account  `json:"accounts"`
+	NatsServer NatsServer `json:"natsServer"`
 }
 
 type Account struct {
-	AccountName   string `json:"accountName"`
-	Users         []User   `json:"users"`
-	Jetstream     bool   `json:"jetstream"`
-	IsSystem      bool   `json:"isSystem"`
+	AccountName string `json:"accountName"`
+	Users       []User `json:"users"`
+	Jetstream   bool   `json:"jetstream"`
+	IsSystem    bool   `json:"isSystem"`
 }
 
 type User struct {
-	UserName  string `json:"userName"`
-	Password  string `json:"password"`
+	UserName string `json:"userName"`
+	Password string `json:"password"`
 }
 
 type NatsServer struct {
-	ServerName  string     `json:"serverName"`
-	Port        int        `json:"port"`
-	JSDomain    string     `json:"jsDomain"`
-    LeafNodes   LeafNode   `json:"leafNodes"`
-	TLS         TLS        `json:"tls"`
+	ServerName string   `json:"serverName"`
+	Port       int      `json:"port"`
+	JSDomain   string   `json:"jsDomain"`
+	LeafNodes  LeafNode `json:"leafNodes"`
+	TLS        TLS      `json:"tls"`
 }
 
 type LeafNode struct {
-	Port     int      `json:"port"`
-    Remotes  Remote   `json:"remotes"`
+	Port    int    `json:"port"`
+	Remotes Remote `json:"remotes"`
 }
 
 type Remote struct {
-	URLProtocol  string  `json:"urlProtocol"`
-	URL          string  `json:"url"`
-	User         string  `json:"user"`
-	Password     string  `json:"password"`
-	Account      string  `json:"account"` 
-	TLS          TLS     `json:"tls"`
+	URLProtocol string `json:"urlProtocol"`
+	URL         string `json:"url"`
+	User        string `json:"user"`
+	Password    string `json:"password"`
+	Account     string `json:"account"`
+	TLS         TLS    `json:"tls"`
 }
 
 type TLS struct {
-	CaCert   string  `json:"caCert"`
-	TlsCert  string  `json:"tlsCert"`
-	TlsKey   string  `json:"tlsKey"`
+	CaCert  string `json:"caCert"`
+	TlsCert string `json:"tlsCert"`
+	TlsKey  string `json:"tlsKey"`
 }
-
 
 func (s *Server) UpdateServer(config *Config) error {
 	s.mu.Lock() // Ensure only one server is started at a time
@@ -172,7 +171,6 @@ func (s *Server) handleTLSFiles(config *Config, configDir string) error {
 	return nil
 }
 
-
 func decodeCertToFile(certString string, outputPath string) error {
 	log.Printf("Starting decodeCertToFile for outputPath: %s", outputPath)
 
@@ -230,45 +228,44 @@ func createAccountConfigFile(path string, config *Config) error {
 	if systemAccountName != "" {
 		accountsConfig.WriteString(fmt.Sprintf("system_account: %s\n", systemAccountName))
 	}
-	
+
 	// Write the configuration to the specified file path
 	return ioutil.WriteFile(path, []byte(accountsConfig.String()), 0644)
 }
 
 func createNatsServerConfigFile(path string, config *Config) error {
-    var content strings.Builder
+	var content strings.Builder
 
-    natsServer := config.NatsServer
+	natsServer := config.NatsServer
 
-    // Common settings
-    content.WriteString(fmt.Sprintf("port: %d\n", natsServer.Port))
-    if natsServer.ServerName != "" {
-        content.WriteString(fmt.Sprintf("server_name: %s\n", natsServer.ServerName))
-    }
-    if natsServer.JSDomain != "" {
-        content.WriteString(fmt.Sprintf(`jetstream {
+	// Common settings
+	content.WriteString(fmt.Sprintf("port: %d\n", natsServer.Port))
+	if natsServer.ServerName != "" {
+		content.WriteString(fmt.Sprintf("server_name: %s\n", natsServer.ServerName))
+	}
+	if natsServer.JSDomain != "" {
+		content.WriteString(fmt.Sprintf(`jetstream {
 	store_dir="./store_leaf"	
     domain: "%s"
 }
 `, natsServer.JSDomain))
-    }
+	}
 
-    // Leaf node settings
-    content.WriteString("leafnodes {\n")
-    leafNode := natsServer.LeafNodes
-    if leafNode.Port > 0 {
-        content.WriteString(fmt.Sprintf("    port: %d\n", leafNode.Port))
-    }
+	// Leaf node settings
+	content.WriteString("leafnodes {\n")
+	leafNode := natsServer.LeafNodes
+	if leafNode.Port > 0 {
+		content.WriteString(fmt.Sprintf("    port: %d\n", leafNode.Port))
+	}
 
-    // Remotes block
-    remote := leafNode.Remotes
+	// Remotes block
+	remote := leafNode.Remotes
 	if remote.URL != "" {
 		content.WriteString(fmt.Sprintf(`    remotes = [
 			{
 				urls: ["%s://%s:%s@%s"]
 				account: "%s"
 	`, remote.URLProtocol, remote.User, remote.Password, remote.URL, remote.Account))
-
 
 		// Check if TLS is defined for remotes
 		if remote.TLS.CaCert != "" || remote.TLS.TlsCert != "" || remote.TLS.TlsKey != "" {
@@ -281,25 +278,24 @@ func createNatsServerConfigFile(path string, config *Config) error {
 		}
 		content.WriteString("        }\n    ]\n")
 	}
-    content.WriteString("}\n")
+	content.WriteString("}\n")
 
-	// Server TLS settings if provided 
+	// Server TLS settings if provided
 	serverTLS := natsServer.TLS
-    if serverTLS.CaCert != "" || serverTLS.TlsCert != "" || serverTLS.TlsKey != "" {
-        content.WriteString(`tls: {
+	if serverTLS.CaCert != "" || serverTLS.TlsCert != "" || serverTLS.TlsKey != "" {
+		content.WriteString(`tls: {
         ca_file: "/nats-config/server-cert/ca.crt"
         cert_file: "/nats-config/server-cert/tls.crt"
         key_file: "/nats-config/server-cert/tls.key"
     }
 `)
-    }
-    // Include accounts file
-    content.WriteString("include ./accounts.conf\n")
+	}
+	// Include accounts file
+	content.WriteString("include ./accounts.conf\n")
 
-    // Write the configuration to the specified file path
-    return ioutil.WriteFile(path, []byte(content.String()), 0644)
+	// Write the configuration to the specified file path
+	return ioutil.WriteFile(path, []byte(content.String()), 0644)
 }
-
 
 func (s *Server) StartServer(config *Config, exitChannel chan error) error {
 
