@@ -156,6 +156,9 @@ spec:
           - internal: 4222
             external: 4222
             protocol: tcp
+          - internal: 7422
+            external: 7422
+            protocol: tcp
         volumes:
           - hostDestination: nats-data
             containerDestination: /store_leaf
@@ -171,6 +174,11 @@ spec:
               - userName: $
                 password: $
             jetstream: true
+          - accountName: $
+            users:
+              - userName: $
+                password: $
+            issystem: true
         natsServer:
           serverName: $
           port: 4222
@@ -211,6 +219,9 @@ spec:
           - internal: 4222
             external: 4222
             protocol: tcp
+          - internal: 7422
+            external: 7422
+            protocol: tcp
         volumes:
           - hostDestination: nats-data
             containerDestination: /store_leaf
@@ -226,6 +237,11 @@ spec:
               - userName: $
                 password: $
             jetstream: true
+          - accountName: $
+            users:
+              - userName: $
+                password: $
+            issystem: true
         natsServer:
           serverName: $
           port: 4222

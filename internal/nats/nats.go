@@ -123,48 +123,48 @@ func (s *Server) handleTLSFiles(config *Config, configDir string) error {
 
 	if tls.CaCert != "" {
 		log.Printf("Processing CaCert for remote: %s", remote.URL)
-		caPath := filepath.Join(leafCertDir, "ca.crt")
-		if err := decodeCertToFile(tls.CaCert, caPath); err != nil {
+		leafCaPath := filepath.Join(leafCertDir, "ca.crt")
+		if err := decodeCertToFile(tls.CaCert, leafCaPath); err != nil {
 			return fmt.Errorf("failed to decode CaCert: %v", err)
 		}
 	}
 
 	if tls.TlsCert != "" {
 		log.Printf("Processing TlsCert for remote: %s", remote.URL)
-		tlsCertPath := filepath.Join(leafCertDir, "tls.crt")
-		if err := decodeCertToFile(tls.TlsCert, tlsCertPath); err != nil {
+		leafTlsCertPath := filepath.Join(leafCertDir, "tls.crt")
+		if err := decodeCertToFile(tls.TlsCert, leafTlsCertPath); err != nil {
 			return fmt.Errorf("failed to decode TlsCert: %v", err)
 		}
 	}
 
 	if tls.TlsKey != "" {
 		log.Printf("Processing TlsKey for remote: %s", remote.URL)
-		tlsKeyPath := filepath.Join(leafCertDir, "tls.key")
-		if err := decodeCertToFile(tls.TlsKey, tlsKeyPath); err != nil {
+		leafTlsKeyPath := filepath.Join(leafCertDir, "tls.key")
+		if err := decodeCertToFile(tls.TlsKey, leafTlsKeyPath); err != nil {
 			return fmt.Errorf("failed to decode TlsKey: %v", err)
 		}
 	}
 
 	if serverTls.CaCert != "" {
-		log.Printf("Processing CaCert for remote")
-		caPath := filepath.Join(serverCertDir, "ca.crt")
-		if err := decodeCertToFile(tls.CaCert, caPath); err != nil {
+		log.Printf("Processing CaCert for server")
+		serverCaPath := filepath.Join(serverCertDir, "ca.crt")
+		if err := decodeCertToFile(serverTls.CaCert, serverCaPath); err != nil {
 			return fmt.Errorf("failed to decode CaCert: %v", err)
 		}
 	}
 
 	if serverTls.TlsCert != "" {
-		log.Printf("Processing TlsCert for remote")
-		tlsCertPath := filepath.Join(serverCertDir, "tls.crt")
-		if err := decodeCertToFile(tls.TlsCert, tlsCertPath); err != nil {
+		log.Printf("Processing TlsCert for server")
+		serverTlsCertPath := filepath.Join(serverCertDir, "tls.crt")
+		if err := decodeCertToFile(serverTls.TlsCert, serverTlsCertPath); err != nil {
 			return fmt.Errorf("failed to decode TlsCert: %v", err)
 		}
 	}
 
 	if serverTls.TlsKey != "" {
 		log.Printf("Processing TlsKey for server")
-		tlsKeyPath := filepath.Join(serverCertDir, "tls.key")
-		if err := decodeCertToFile(tls.TlsKey, tlsKeyPath); err != nil {
+		serverTlsKeyPath := filepath.Join(serverCertDir, "tls.key")
+		if err := decodeCertToFile(serverTls.TlsKey, serverTlsKeyPath); err != nil {
 			return fmt.Errorf("failed to decode TlsKey: %v", err)
 		}
 	}
@@ -256,41 +256,43 @@ func createNatsServerConfigFile(path string, config *Config) error {
     // Leaf node settings
     content.WriteString("leafnodes {\n")
     leafNode := natsServer.LeafNodes
-	serverTLS := natsServer.TLS
     if leafNode.Port > 0 {
         content.WriteString(fmt.Sprintf("    port: %d\n", leafNode.Port))
     }
 
-    // Check if TLS is defined for leafnodes
+    // Remotes block
+    remote := leafNode.Remotes
+	if remote.URL != "" {
+		content.WriteString(fmt.Sprintf(`    remotes = [
+			{
+				urls: ["%s://%s:%s@%s"]
+				account: "%s"
+	`, remote.URLProtocol, remote.User, remote.Password, remote.URL, remote.Account))
+
+
+		// Check if TLS is defined for remotes
+		if remote.TLS.CaCert != "" || remote.TLS.TlsCert != "" || remote.TLS.TlsKey != "" {
+			content.WriteString(`            tls: {
+					ca_file: "/nats-config/leaf-cert/ca.crt"
+					cert_file: "/nats-config/leaf-cert/tls.crt"
+					key_file: "/nats-config/leaf-cert/tls.key"
+				}
+	`)
+		}
+		content.WriteString("        }\n    ]\n")
+	}
+    content.WriteString("}\n")
+
+	// Server TLS settings if provided 
+	serverTLS := natsServer.TLS
     if serverTLS.CaCert != "" || serverTLS.TlsCert != "" || serverTLS.TlsKey != "" {
-        content.WriteString(`    tls: {
+        content.WriteString(`tls: {
         ca_file: "/nats-config/server-cert/ca.crt"
         cert_file: "/nats-config/server-cert/tls.crt"
         key_file: "/nats-config/server-cert/tls.key"
     }
 `)
     }
-
-    // Remotes block
-    remote := leafNode.Remotes
-    content.WriteString(fmt.Sprintf(`    remotes = [
-        {
-            urls: ["%s://%s:%s@%s"]
-            account: "%s"
-`, remote.URLProtocol, remote.User, remote.Password, remote.URL, remote.Account))
-
-    // Check if TLS is defined for remotes
-    if remote.TLS.CaCert != "" || remote.TLS.TlsCert != "" || remote.TLS.TlsKey != "" {
-        content.WriteString(`            tls: {
-                ca_file: "/nats-config/leaf-cert/ca.crt"
-                cert_file: "/nats-config/leaf-cert/tls.crt"
-                key_file: "/nats-config/leaf-cert/tls.key"
-            }
-`)
-    }
-    content.WriteString("        }\n    ]\n")
-    content.WriteString("}\n")
-
     // Include accounts file
     content.WriteString("include ./accounts.conf\n")
 
