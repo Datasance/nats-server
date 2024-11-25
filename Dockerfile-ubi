@@ -1,0 +1,27 @@
+FROM golang:1.23-alpine3.20 AS go-builder
+
+ARG TARGETOS
+ARG TARGETARCH
+
+RUN mkdir -p /go/src/github.com/datasance/nats-server
+WORKDIR /go/src/github.com/datasance/nats-server
+COPY . /go/src/github.com/datasance/nats-server
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o bin/iofog-nats
+RUN go install github.com/nats-io/nats-server/v2@v2.10.22
+RUN go install github.com/nats-io/nsc/v2@v2.10.0
+
+
+FROM registry.access.redhat.com/ubi9-minimal:latest
+RUN microdnf install shadow-utils && \
+    microdnf clean all
+
+RUN useradd --uid 10000 --create-home runner
+USER 10000
+WORKDIR /home/runner
+
+COPY LICENSE /licenses/LICENSE
+COPY --from=go-builder /go/src/github.com/datasance/nats-server/bin/iofog-nats /home/runner/bin/iofog-nats
+COPY --from=go-builder /go/bin/nsc /home/runner/bin/nsc
+COPY --from=go-builder /go/bin/nats-server /home/runner/bin/nats-server
+
+CMD ["/home/runner/bin/iofog-nats"]

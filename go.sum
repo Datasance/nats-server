@@ -1,5 +1,5 @@
-github.com/datasance/iofog-go-sdk/v3 v3.4.12 h1:gSc1KiZK0WB0lAP8jeSl8gCRbjCW5wJNMvHGh1V9guw=
-github.com/datasance/iofog-go-sdk/v3 v3.4.12/go.mod h1:NxHVscnHULXDK0BJMOP77B6zqqaGdQ2Z1eBoYGwxgIA=
+github.com/datasance/iofog-go-sdk/v3 v3.4.13 h1:lilrkYZmeojFAb2rRmBHweWqKrIsxjpGvKKLToB8afM=
+github.com/datasance/iofog-go-sdk/v3 v3.4.13/go.mod h1:X6HEP0Lr0qh8QnYKTe2O2ispUXaSoLMZKpwil5ieT0g=
 github.com/eapache/channels v1.1.0 h1:F1taHcn7/F0i8DYqKXJnyhJcVpp2kgFcNePxXtnyu4k=
 github.com/eapache/channels v1.1.0/go.mod h1:jMm2qB5Ubtg9zLd+inMZd2/NUvXgzmWXsDaLyQIGfH0=
 github.com/eapache/queue v1.1.0 h1:YOEu7KNc61ntiQlcEeUIoDTJ2o8mQznoNvUhiigpIqc=
