@@ -133,6 +133,13 @@ spec:
           mqtt:
             port: $
             jsDomain: $
+            tls:
+                CaCert: >-
+                    $Base64 ca crt
+                TlsCert: >-
+                    $Base64 tls crt
+                TlsKey: >-
+                    $Base64 tls key
           mqttAuth:
             users:
               - username: $
@@ -279,6 +286,13 @@ spec:
           mqtt:
             port: $
             jsDomain: $
+            tls:
+                CaCert: >-
+                    $Base64 ca crt
+                TlsCert: >-
+                    $Base64 tls crt
+                TlsKey: >-
+                    $Base64 tls key
           mqttAuth:
             users:
               - username: $
