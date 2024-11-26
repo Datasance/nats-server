@@ -330,11 +330,11 @@ func createNatsServerConfigFile(path string, config *Config) error {
 	}
 
 	// MQTT settings
-	content.WriteString("mqtt {\n")
 	mqtt := natsServer.MQTT
 	if mqtt.Port > 0 {
+		content.WriteString("mqtt {\n")
 		content.WriteString(fmt.Sprintf("    port: %d\n", mqtt.Port))
-	}
+	
 
 	if mqtt.JsDomain != "" {
 		content.WriteString(fmt.Sprintf("    js_domain: %s\n", mqtt.JsDomain))
@@ -351,12 +351,12 @@ func createNatsServerConfigFile(path string, config *Config) error {
 	}
 
 	content.WriteString("}\n")
+	}
 
-	// Start the accounts block
-	content.WriteString("authorization: {\n")
+	// Start the auth block
 	auth := natsServer.Authorization
 	if len(auth.Users) != 0 {
-		// Add users for the account
+		content.WriteString("authorization: {\n")
 		content.WriteString("        users [\n")
 		for _, user := range auth.Users {
 			content.WriteString(fmt.Sprintf("            {user: %s, password: %s, allowed_connection_types: [MQTT]}\n", user.Username, user.Password))
