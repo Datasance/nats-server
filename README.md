@@ -43,7 +43,7 @@ spec:
         accounts:
           - accountName: $
             users:
-              - userName: $
+              - username: $
                 password: $
             jetstream: true
         natsServer:
@@ -57,6 +57,13 @@ spec:
               user: $
               password: $
               account: $
+          mqtt:
+            port: $
+            jsDomain: $
+          mqttAuth:
+            users:
+              - username: $
+                password: $
   routes: []
 
 ```
@@ -102,7 +109,7 @@ spec:
         accounts:
           - accountName: $
             users:
-              - userName: $
+              - username: $
                 password: $
             jetstream: true
         natsServer:
@@ -123,6 +130,13 @@ spec:
                   $Base64 tls crt
                 TlsKey: >-
                   $Base64 tls key
+          mqtt:
+            port: $
+            jsDomain: $
+          mqttAuth:
+            users:
+              - username: $
+                password: $
   routes: []
 
 ```
@@ -171,12 +185,12 @@ spec:
         accounts:
           - accountName: $
             users:
-              - userName: $
+              - username: $
                 password: $
             jetstream: true
           - accountName: $
             users:
-              - userName: $
+              - username: $
                 password: $
             issystem: true
         natsServer:
@@ -185,6 +199,13 @@ spec:
           jsDomain: $
           leafNodes:
             port: 7422
+          mqtt:
+            port: $
+            jsDomain: $
+          mqttAuth:
+            users:
+              - username: $
+                password: $
 
   routes: []
 
@@ -234,12 +255,12 @@ spec:
         accounts:
           - accountName: $
             users:
-              - userName: $
+              - username: $
                 password: $
             jetstream: true
           - accountName: $
             users:
-              - userName: $
+              - username: $
                 password: $
             issystem: true
         natsServer:
@@ -255,6 +276,14 @@ spec:
               $Base64 tls crt
             TlsKey: >-
               $Base64 tls key
+          mqtt:
+            port: $
+            jsDomain: $
+          mqttAuth:
+            users:
+              - username: $
+                password: $
+  routes: []
 
 
   routes: []

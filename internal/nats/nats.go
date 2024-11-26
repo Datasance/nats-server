@@ -31,16 +31,28 @@ type Account struct {
 }
 
 type User struct {
-	UserName string `json:"userName"`
+	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
 type NatsServer struct {
-	ServerName string   `json:"serverName"`
-	Port       int      `json:"port"`
-	JSDomain   string   `json:"jsDomain"`
-	LeafNodes  LeafNode `json:"leafNodes"`
-	TLS        TLS      `json:"tls"`
+	ServerName    string        `json:"serverName"`
+	Port          int           `json:"port"`
+	JsDomain      string        `json:"jsDomain"`
+	LeafNodes     LeafNode      `json:"leafNodes"`
+	TLS           TLS           `json:"tls"`
+	MQTT          MQTT          `json:"mqtt"`
+	Authorization Authorization `json:"mqttAuth"`
+}
+
+type Authorization struct {
+	Users []User `json:"users"`
+}
+
+type MQTT struct {
+	Port     int    `json:"port"`
+	TLS      TLS    `json:"tls"`
+	JsDomain string `json:"jsDomain"`
 }
 
 type LeafNode struct {
@@ -109,8 +121,10 @@ func (s *Server) handleTLSFiles(config *Config, configDir string) error {
 	remote := config.NatsServer.LeafNodes.Remotes
 	tls := remote.TLS
 	serverTls := config.NatsServer.TLS
+	mqttTls := config.NatsServer.MQTT.TLS
 	serverCertDir := fmt.Sprintf("%s/server-cert", configDir)
 	leafCertDir := fmt.Sprintf("%s/leaf-cert", configDir)
+	mqttCertDir := fmt.Sprintf("%s/mqtt-cert", configDir)
 
 	if err := os.MkdirAll(serverCertDir, 0755); err != nil {
 		return fmt.Errorf("failed to create server cert directory: %v", err)
@@ -168,6 +182,30 @@ func (s *Server) handleTLSFiles(config *Config, configDir string) error {
 		}
 	}
 
+	if mqttTls.CaCert != "" {
+		log.Printf("Processing CaCert for server")
+		mqttCaPath := filepath.Join(mqttCertDir, "ca.crt")
+		if err := decodeCertToFile(mqttTls.CaCert, mqttCaPath); err != nil {
+			return fmt.Errorf("failed to decode CaCert: %v", err)
+		}
+	}
+
+	if mqttTls.TlsCert != "" {
+		log.Printf("Processing TlsCert for server")
+		mqttTlsCertPath := filepath.Join(mqttCertDir, "tls.crt")
+		if err := decodeCertToFile(mqttTls.TlsCert, mqttTlsCertPath); err != nil {
+			return fmt.Errorf("failed to decode TlsCert: %v", err)
+		}
+	}
+
+	if mqttTls.TlsKey != "" {
+		log.Printf("Processing TlsKey for server")
+		mqttTlsKeyPath := filepath.Join(mqttCertDir, "tls.key")
+		if err := decodeCertToFile(mqttTls.TlsKey, mqttTlsKeyPath); err != nil {
+			return fmt.Errorf("failed to decode TlsKey: %v", err)
+		}
+	}
+
 	return nil
 }
 
@@ -204,7 +242,7 @@ func createAccountConfigFile(path string, config *Config) error {
 		// Add users for the account
 		accountsConfig.WriteString("        users: [\n")
 		for _, user := range account.Users {
-			accountsConfig.WriteString(fmt.Sprintf("            {user: %s, password: %s},\n", user.UserName, user.Password))
+			accountsConfig.WriteString(fmt.Sprintf("            {user: %s, password: %s},\n", user.Username, user.Password))
 		}
 		accountsConfig.WriteString("        ],\n")
 
@@ -243,12 +281,12 @@ func createNatsServerConfigFile(path string, config *Config) error {
 	if natsServer.ServerName != "" {
 		content.WriteString(fmt.Sprintf("server_name: %s\n", natsServer.ServerName))
 	}
-	if natsServer.JSDomain != "" {
+	if natsServer.JsDomain != "" {
 		content.WriteString(fmt.Sprintf(`jetstream {
 	store_dir="./store_leaf"	
     domain: "%s"
 }
-`, natsServer.JSDomain))
+`, natsServer.JsDomain))
 	}
 
 	// Leaf node settings
@@ -289,6 +327,42 @@ func createNatsServerConfigFile(path string, config *Config) error {
         key_file: "/nats-config/server-cert/tls.key"
     }
 `)
+	}
+
+	// MQTT settings
+	content.WriteString("mqtt {\n")
+	mqtt := natsServer.MQTT
+	if mqtt.Port > 0 {
+		content.WriteString(fmt.Sprintf("    port: %d\n", mqtt.Port))
+	}
+
+	if mqtt.JsDomain != "" {
+		content.WriteString(fmt.Sprintf("    js_domain: %s\n", mqtt.JsDomain))
+	}
+
+	// Check if TLS is defined for remotes
+	if mqtt.TLS.CaCert != "" || mqtt.TLS.TlsCert != "" || mqtt.TLS.TlsKey != "" {
+		content.WriteString(`tls: {
+			ca_file: "/nats-config/mqtt-cert/ca.crt"
+			cert_file: "/nats-config/mqtt-cert/tls.crt"
+			key_file: "/nats-config/mqtt-cert/tls.key"
+			}
+`)
+	}
+
+	content.WriteString("}\n")
+
+	// Start the accounts block
+	content.WriteString("authorization: {\n")
+	auth := natsServer.Authorization
+	if len(auth.Users) != 0 {
+		// Add users for the account
+		content.WriteString("        users [\n")
+		for _, user := range auth.Users {
+			content.WriteString(fmt.Sprintf("            {user: %s, password: %s, allowed_connection_types: [MQTT]}\n", user.Username, user.Password))
+		}
+		content.WriteString("]\n")
+		content.WriteString("}\n")
 	}
 	// Include accounts file
 	content.WriteString("include ./accounts.conf\n")
