@@ -46,17 +46,28 @@ spec:
               - username: $
                 password: $
             jetstream: true
+          - accountName: SYS
+            users:
+              - username: $
+                password: $
+            isSystem: true
         natsServer:
           serverName: $
           port: 4222
           jsDomain: $
           leafNodes:
             remotes:
-              urlProtocol: nats
-              url: $:7422
-              user: $
-              password: $
-              account: $
+              remote:
+                - account: $USERS
+                  password: $
+                  url: $
+                  urlProtocol: $
+                  user: $
+                - account: $SYS
+                  password: $
+                  url: $
+                  urlProtocol: $
+                  user: $
           mqtt:
             port: $
             jsDomain: $
@@ -112,17 +123,28 @@ spec:
               - username: $
                 password: $
             jetstream: true
+          - accountName: SYS
+            users:
+              - username: $
+                password: $
+            isSystem: true   
         natsServer:
           serverName: $
           port: 4222
           jsDomain: $
           leafNodes:
             remotes:
-              urlProtocol: ws
-              url: $
-              user: $
-              password: $
-              account: $
+              remote:
+                - account: $USERS
+                  password: $
+                  url: $
+                  urlProtocol: $
+                  user: $
+                - account: $SYS
+                  password: $
+                  url: $
+                  urlProtocol: $
+                  user: $
               tls:
                 CaCert: >-
                   $Base64 ca crt
@@ -145,7 +167,6 @@ spec:
               - username: $
                 password: $
   routes: []
-
 ```
 
 
@@ -213,7 +234,6 @@ spec:
             users:
               - username: $
                 password: $
-
   routes: []
 
 ```
@@ -299,6 +319,4 @@ spec:
                 password: $
   routes: []
 
-
-  routes: []
 ```

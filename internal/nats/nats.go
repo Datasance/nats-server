@@ -56,8 +56,13 @@ type MQTT struct {
 }
 
 type LeafNode struct {
-	Port    int    `json:"port"`
-	Remotes Remote `json:"remotes"`
+	Port    int     `json:"port"`
+	Remotes Remotes `json:"remotes"`
+}
+
+type Remotes struct {
+	Remote []Remote `json:"remote"`
+	TLS    TLS      `json:"tls"`
 }
 
 type Remote struct {
@@ -66,7 +71,6 @@ type Remote struct {
 	User        string `json:"user"`
 	Password    string `json:"password"`
 	Account     string `json:"account"`
-	TLS         TLS    `json:"tls"`
 }
 
 type TLS struct {
@@ -135,7 +139,7 @@ func (s *Server) handleTLSFiles(config *Config, configDir string) error {
 	}
 
 	if tls.CaCert != "" {
-		log.Printf("Processing CaCert for remote: %s", remote.URL)
+		log.Printf("Processing CaCert for remote nats connection")
 		leafCaPath := filepath.Join(leafCertDir, "ca.crt")
 		if err := decodeCertToFile(tls.CaCert, leafCaPath); err != nil {
 			return fmt.Errorf("failed to decode CaCert: %v", err)
@@ -143,7 +147,7 @@ func (s *Server) handleTLSFiles(config *Config, configDir string) error {
 	}
 
 	if tls.TlsCert != "" {
-		log.Printf("Processing TlsCert for remote: %s", remote.URL)
+		log.Printf("Processing TlsCert for remote nats connection")
 		leafTlsCertPath := filepath.Join(leafCertDir, "tls.crt")
 		if err := decodeCertToFile(tls.TlsCert, leafTlsCertPath); err != nil {
 			return fmt.Errorf("failed to decode TlsCert: %v", err)
@@ -151,7 +155,7 @@ func (s *Server) handleTLSFiles(config *Config, configDir string) error {
 	}
 
 	if tls.TlsKey != "" {
-		log.Printf("Processing TlsKey for remote: %s", remote.URL)
+		log.Printf("Processing TlsKey for remote nats connection")
 		leafTlsKeyPath := filepath.Join(leafCertDir, "tls.key")
 		if err := decodeCertToFile(tls.TlsKey, leafTlsKeyPath); err != nil {
 			return fmt.Errorf("failed to decode TlsKey: %v", err)
@@ -297,26 +301,30 @@ func createNatsServerConfigFile(path string, config *Config) error {
 	}
 
 	// Remotes block
-	remote := leafNode.Remotes
-	if remote.URL != "" {
-		content.WriteString(fmt.Sprintf(`    remotes = [
-			{
-				urls: ["%s://%s:%s@%s"]
-				account: "%s"
-	`, remote.URLProtocol, remote.User, remote.Password, remote.URL, remote.Account))
+	remotes := leafNode.Remotes
+	if len(remotes.Remote) > 0 {
+		content.WriteString("    remotes = [\n")
+		for _, remote := range remotes.Remote {
+			content.WriteString(fmt.Sprintf(`        {
+            urls: ["%s://%s:%s@%s"]
+            account: "%s"
+`, remote.URLProtocol, remote.User, remote.Password, remote.URL, remote.Account))
 
-		// Check if TLS is defined for remotes
-		if remote.TLS.CaCert != "" || remote.TLS.TlsCert != "" || remote.TLS.TlsKey != "" {
-			content.WriteString(`            tls: {
-					ca_file: "/nats-config/leaf-cert/ca.crt"
-					cert_file: "/nats-config/leaf-cert/tls.crt"
-					key_file: "/nats-config/leaf-cert/tls.key"
-				}
-	`)
+			// Check if TLS is defined for remotes
+			if remotes.TLS.CaCert != "" || remotes.TLS.TlsCert != "" || remotes.TLS.TlsKey != "" {
+				content.WriteString(`            tls: {
+                ca_file: "/nats-config/leaf-cert/ca.crt"
+                cert_file: "/nats-config/leaf-cert/tls.crt"
+                key_file: "/nats-config/leaf-cert/tls.key"
+            }
+`)
+			}
+			content.WriteString("        },\n")
 		}
-		content.WriteString("        }\n    ]\n")
+		content.WriteString("    ]\n")
 	}
 	content.WriteString("}\n")
+
 
 	// Server TLS settings if provided
 	serverTLS := natsServer.TLS
@@ -334,23 +342,22 @@ func createNatsServerConfigFile(path string, config *Config) error {
 	if mqtt.Port > 0 {
 		content.WriteString("mqtt {\n")
 		content.WriteString(fmt.Sprintf("    port: %d\n", mqtt.Port))
-	
 
-	if mqtt.JsDomain != "" {
-		content.WriteString(fmt.Sprintf("    js_domain: %s\n", mqtt.JsDomain))
-	}
+		if mqtt.JsDomain != "" {
+			content.WriteString(fmt.Sprintf("    js_domain: %s\n", mqtt.JsDomain))
+		}
 
-	// Check if TLS is defined for remotes
-	if mqtt.TLS.CaCert != "" || mqtt.TLS.TlsCert != "" || mqtt.TLS.TlsKey != "" {
-		content.WriteString(`tls: {
+		// Check if TLS is defined for remotes
+		if mqtt.TLS.CaCert != "" || mqtt.TLS.TlsCert != "" || mqtt.TLS.TlsKey != "" {
+			content.WriteString(`tls: {
 			ca_file: "/nats-config/mqtt-cert/ca.crt"
 			cert_file: "/nats-config/mqtt-cert/tls.crt"
 			key_file: "/nats-config/mqtt-cert/tls.key"
 			}
 `)
-	}
+		}
 
-	content.WriteString("}\n")
+		content.WriteString("}\n")
 	}
 
 	// Start the auth block

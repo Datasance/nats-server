@@ -10,7 +10,7 @@ RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o bin/iofog-nats
 
 
 
-FROM nats:alpine
+FROM nats:2.10.24-alpine
 COPY LICENSE /licenses/LICENSE
 COPY --from=go-builder /go/src/github.com/datasance/nats-server/bin/iofog-nats /bin/iofog-nats
 
