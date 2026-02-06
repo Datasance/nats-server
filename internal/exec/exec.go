@@ -8,7 +8,6 @@
  *  *
  *  * SPDX-License-Identifier: EPL-2.0
  *  *******************************************************************************
- *
  */
 
 package exec
@@ -21,40 +20,46 @@ import (
 	"os/exec"
 )
 
-func Run(ch chan<- error, command string, args []string, env []string) {
-	log.Printf("Running command: %s with args: %v and env vars: %v", command, args, env)
+// Start starts the command with the given args and optional extra environment variables.
+// The process environment is always preserved: cmd.Env = append(os.Environ(), extraEnv...),
+// so that placeholders like $SERVER_NAME in config files are resolved by the child.
+// workDir is the working directory for the process (e.g. config file's directory); empty means current dir.
+// Stdout and stderr are forwarded to the parent's output. The returned *exec.Cmd can be used
+// to send signals (e.g. SIGHUP for config reload) via cmd.Process.Signal(syscall.SIGHUP).
+// The caller must run cmd.Wait() in a goroutine and send the result to an exit channel.
+func Start(name string, args []string, extraEnv []string, workDir string) (*exec.Cmd, error) {
+	log.Printf("Starting command: %s with args: %v", name, args)
 
-	cmd := exec.Command(command, args...)
-	cmd.Env = append(os.Environ(), env...)
+	cmd := exec.Command(name, args...)
+	cmd.Env = append(os.Environ(), extraEnv...)
+	if workDir != "" {
+		cmd.Dir = workDir
+	}
 
 	outReader, err := cmd.StdoutPipe()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	outScanner := bufio.NewScanner(outReader)
 	go func() {
-		for outScanner.Scan() {
-			fmt.Println(outScanner.Text())
+		scanner := bufio.NewScanner(outReader)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
 		}
 	}()
 
 	errReader, err := cmd.StderrPipe()
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	errScanner := bufio.NewScanner(errReader)
 	go func() {
-		for errScanner.Scan() {
-			fmt.Println(errScanner.Text())
+		scanner := bufio.NewScanner(errReader)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
 		}
 	}()
 
 	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-
-	if err := cmd.Wait(); err != nil {
-		log.Fatal(err)
-	}
-	ch <- err
+	return cmd, nil
 }

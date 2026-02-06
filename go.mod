@@ -1,11 +1,7 @@
 module github.com/datasance/nats-server
 
-go 1.20
+go 1.24
 
-require github.com/datasance/iofog-go-sdk/v3 v3.4.13
+require github.com/fsnotify/fsnotify v1.7.0
 
-require (
-	github.com/eapache/channels v1.1.0 // indirect
-	github.com/eapache/queue v1.1.0 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
-)
+require golang.org/x/sys v0.4.0 // indirect

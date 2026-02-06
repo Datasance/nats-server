@@ -1,4 +1,4 @@
-# Build pot-nats wrapper and install nats-server
+# Build pot-nats wrapper and install nats-server + nats-cli
 FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS go-builder
 ARG TARGETOS
 ARG TARGETARCH
@@ -12,12 +12,14 @@ RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o
 
 
 RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/nats-io/nats-server/v2@v2.12.4
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/nats-io/natscli/nats@latest
 
 
 RUN mkdir -p /out && \
-    find /go/bin -name "nats-server" -type f -exec cp {} /out/nats-server \;
+    find /go/bin -name "nats-server" -type f -exec cp {} /out/nats-server \; && \
+    find /go/bin -name "nats" -type f -exec cp {} /out/nats \;
 
-# Create non-root user and writable dirs for pid file and JetStream store
+# Create non-root user for UBI micro
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest AS user-stage
 RUN microdnf install -y shadow-utils && microdnf clean all -y
 RUN useradd --uid 10000 --create-home runner
@@ -32,6 +34,7 @@ COPY --from=user-stage /home/runner /home/runner
 # FIX 3: Copy from the normalized /out directory
 COPY --from=go-builder /build/pot-nats /home/runner/bin/pot-nats
 COPY --from=go-builder /out/nats-server /home/runner/bin/nats-server
+COPY --from=go-builder /out/nats /home/runner/bin/nats
 
 COPY LICENSE /licenses/LICENSE
 
