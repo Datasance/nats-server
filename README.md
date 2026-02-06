@@ -1,8 +1,8 @@
-# pot-nats – NATS Server for Datasance Pot
+# pot-nats – NATS Server for Datasance PoT
 
-NATS server image for use on **Datasance Pot** (Kubernetes or edge with pot-agent). Config, account config, and SSL certs are provided via **volume mounts**; the wrapper starts [nats-server](https://github.com/nats-io/nats-server) v2.12.4 and watches for file changes, triggering a config reload (SIGHUP) without restart.
+NATS server image for use on **Datasance PoT** (Kubernetes or edge with PoT-agent). Config, account config, and SSL certs are provided via **volume mounts**; the wrapper starts [nats-server](https://github.com/nats-io/nats-server) v2.12.4 and watches for file changes, triggering a config reload (SIGHUP) without restart.
 
-Both **Kubernetes** (pot-controller mounting ConfigMaps/Secrets) and **Pot edge** (pot-agent binding config) use the same contract: mount the server config, account config, and SSL directory at the paths below (or override with env vars).
+Both **Kubernetes** (PoT-controller mounting ConfigMaps/Secrets) and **PoT edge** (PoT-agent binding config) use the same contract: mount the server config, account config, and SSL directory at the paths below (or override with env vars).
 
 ## Environment variables
 
@@ -10,11 +10,11 @@ Both **Kubernetes** (pot-controller mounting ConfigMaps/Secrets) and **Pot edge*
 | ------------------- | ------------------------- | --------------------------------------------------------------------------- |
 | `NATS_CONF`         | `/etc/nats/config/server.conf`   | Server config file path (passed to nats-server as `-c`).                    |
 | `NATS_ACCOUNTS`     | `/etc/nats/config/accounts.conf` | Account config file; watched for changes and triggers reload.               |
-| `NATS_SSL_DIR`      | `/etc/nats/ssl`           | Directory for TLS material; watched for changes and triggers reload.        |
+| `NATS_SSL_DIR`      | `/etc/nats/certs`           | Directory for TLS material; watched for changes and triggers reload.        |
 | `NATS_SERVER_BIN`   | `/home/runner/bin/nats-server` | Path to the nats-server binary (override for local dev, e.g. `nats-server`). |
 | `NATS_MONITOR_PORT` | `8222`                    | HTTP monitoring port (nats-server `-m`). Set to `0` to disable.             |
 
-The server config file may use **environment variable placeholders** (e.g. `$SERVER_NAME`, `$HUB_NAME`). NATS resolves these from the process environment; the wrapper preserves the container environment when starting nats-server so K8s/Pot-injected vars are available.
+The server config file may use **environment variable placeholders** (e.g. `$SERVER_NAME`, `$HUB_NAME`). NATS resolves these from the process environment; the wrapper preserves the container environment when starting nats-server so K8s/PoT-injected vars are available.
 
 ## Volume mounts
 
