@@ -32,6 +32,8 @@ func main() {
 	natsConf := config.GetNatsConf()
 	natsAccounts := config.GetNatsAccounts()
 	natsSSLDir := config.GetNatsSSLDir()
+	natsJWTDir := config.GetNatsJWTDir()
+	natsCredsDir := config.GetNatsCredsDir()
 
 	// Wait for server config file to exist (e.g. volume-mounted by K8s or Pot agent)
 	for i := 0; i < configWaitAttempts; i++ {
@@ -76,6 +78,24 @@ func main() {
 		go watch.WatchDir(ctx, natsSSLDir, debounce, func() {
 			if err := server.Reload(); err != nil {
 				log.Printf("Reload after SSL dir change: %v", err)
+			}
+		})
+	}
+
+	// Watch JWT directory if it exists
+	if info, err := os.Stat(natsJWTDir); err == nil && info.IsDir() {
+		go watch.WatchDir(ctx, natsJWTDir, debounce, func() {
+			if err := server.Reload(); err != nil {
+				log.Printf("Reload after JWT dir change: %v", err)
+			}
+		})
+	}
+
+	// Watch creds directory if it exists
+	if info, err := os.Stat(natsCredsDir); err == nil && info.IsDir() {
+		go watch.WatchDir(ctx, natsCredsDir, debounce, func() {
+			if err := server.Reload(); err != nil {
+				log.Printf("Reload after creds dir change: %v", err)
 			}
 		})
 	}

@@ -21,11 +21,15 @@ const (
 	EnvNatsConf            = "NATS_CONF"
 	EnvNatsAccounts        = "NATS_ACCOUNTS"
 	EnvNatsSSLDir          = "NATS_SSL_DIR"
+	EnvNatsJWTDir          = "NATS_JWT_DIR"
+	EnvNatsCredsDir        = "NATS_CREDS_DIR"
 	EnvNatsServerBin       = "NATS_SERVER_BIN"
 	EnvNatsMonitorPort     = "NATS_MONITOR_PORT"
 	DefaultNatsConf        = "/etc/nats/config/server.conf"
 	DefaultNatsAccounts    = "/etc/nats/config/accounts.conf"
 	DefaultNatsSSLDir      = "/etc/nats/certs"
+	DefaultNatsJWTDir      = "/etc/nats/jwt"
+	DefaultNatsCredsDir    = "/etc/nats/creds/"
 	DefaultNatsServerBin   = "/home/runner/bin/nats-server"
 	DefaultNatsMonitorPort = 8222
 )
@@ -52,6 +56,22 @@ func GetNatsSSLDir() string {
 		return p
 	}
 	return DefaultNatsSSLDir
+}
+
+// GetNatsJWTDir returns the JWT directory from NATS_JWT_DIR, or DefaultNatsJWTDir if unset.
+func GetNatsJWTDir() string {
+	if p := os.Getenv(EnvNatsJWTDir); p != "" {
+		return p
+	}
+	return DefaultNatsJWTDir
+}
+
+// GetNatsCredsDir returns the creds directory from NATS_CREDS_DIR, or DefaultNatsCredsDir if unset.
+func GetNatsCredsDir() string {
+	if p := os.Getenv(EnvNatsCredsDir); p != "" {
+		return p
+	}
+	return DefaultNatsCredsDir
 }
 
 // GetNatsServerBin returns the nats-server binary path from NATS_SERVER_BIN, or DefaultNatsServerBin if unset.

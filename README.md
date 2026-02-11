@@ -11,6 +11,8 @@ Both **Kubernetes** (PoT-controller mounting ConfigMaps/Secrets) and **PoT edge*
 | `NATS_CONF`         | `/etc/nats/config/server.conf`   | Server config file path (passed to nats-server as `-c`).                    |
 | `NATS_ACCOUNTS`     | `/etc/nats/config/accounts.conf` | Account config file; watched for changes and triggers reload.               |
 | `NATS_SSL_DIR`      | `/etc/nats/certs`           | Directory for TLS material; watched for changes and triggers reload.        |
+| `NATS_JWT_DIR`      | `/etc/nats/jwt`             | Directory for JWT assets; watched for changes and triggers reload.          |
+| `NATS_CREDS_DIR`    | `/etc/nats/creds/`          | Directory for creds files; watched for changes and triggers reload.         |
 | `NATS_SERVER_BIN`   | `/home/runner/bin/nats-server` | Path to the nats-server binary (override for local dev, e.g. `nats-server`). |
 | `NATS_MONITOR_PORT` | `8222`                    | HTTP monitoring port (nats-server `-m`). Set to `0` to disable.             |
 
@@ -24,7 +26,7 @@ The server config file may use **environment variable placeholders** (e.g. `$SER
 
 ## Reload behaviour
 
-The wrapper watches `NATS_CONF`, `NATS_ACCOUNTS` (if present), and `NATS_SSL_DIR`. On any change (after a short debounce), it sends **SIGHUP** to the running nats-server process. NATS reloads config and certs without restart.
+The wrapper watches `NATS_CONF`, `NATS_ACCOUNTS` (if present), `NATS_SSL_DIR`, `NATS_JWT_DIR`, and `NATS_CREDS_DIR` (directory watchers start only if paths exist). On any change (after a short debounce), it sends **SIGHUP** to the running nats-server process. NATS reloads config and certs without restart.
 
 ## Image
 
