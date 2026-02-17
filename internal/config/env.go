@@ -13,25 +13,32 @@
 package config
 
 import (
+	"bufio"
 	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 const (
-	EnvNatsConf            = "NATS_CONF"
-	EnvNatsAccounts        = "NATS_ACCOUNTS"
-	EnvNatsSSLDir          = "NATS_SSL_DIR"
-	EnvNatsJWTDir          = "NATS_JWT_DIR"
-	EnvNatsCredsDir        = "NATS_CREDS_DIR"
-	EnvNatsServerBin       = "NATS_SERVER_BIN"
-	EnvNatsMonitorPort     = "NATS_MONITOR_PORT"
-	DefaultNatsConf        = "/etc/nats/config/server.conf"
-	DefaultNatsAccounts    = "/etc/nats/config/accounts.conf"
-	DefaultNatsSSLDir      = "/etc/nats/certs"
-	DefaultNatsJWTDir      = "/etc/nats/jwt"
-	DefaultNatsCredsDir    = "/etc/nats/creds/"
-	DefaultNatsServerBin   = "/home/runner/bin/nats-server"
-	DefaultNatsMonitorPort = 8222
+	EnvNatsConf               = "NATS_CONF"
+	EnvNatsAccounts           = "NATS_ACCOUNTS"
+	EnvNatsSSLDir             = "NATS_SSL_DIR"
+	EnvNatsJWTDir             = "NATS_JWT_DIR"
+	EnvNatsCredsDir           = "NATS_CREDS_DIR"
+	EnvNatsServerBin          = "NATS_SERVER_BIN"
+	EnvNatsMonitorPort        = "NATS_MONITOR_PORT"
+	EnvNatsSysUserCredPath    = "NATS_SYS_USER_CRED_PATH"
+	EnvNatsClientURL          = "NATS_CLIENT_URL"
+	EnvNatsJetStreamStoreDir  = "NATS_JETSTREAM_STORE_DIR"
+	DefaultNatsConf           = "/etc/nats/config/server.conf"
+	DefaultNatsAccounts      = "/etc/nats/config/accounts.conf"
+	DefaultNatsSSLDir         = "/etc/nats/certs"
+	DefaultNatsJWTDir         = "/etc/nats/jwt"
+	DefaultNatsCredsDir       = "/etc/nats/creds/"
+	DefaultNatsServerBin      = "/home/runner/bin/nats-server"
+	DefaultNatsMonitorPort    = 8222
+	DefaultNatsClientURL = "nats://127.0.0.1:4222"
 )
 
 // GetNatsConf returns the server config file path from NATS_CONF, or DefaultNatsConf if unset.
@@ -94,4 +101,93 @@ func GetNatsMonitorPort() int {
 		return DefaultNatsMonitorPort
 	}
 	return port
+}
+
+// GetNatsSysUserCredPath returns the system user credentials file path from NATS_SYS_USER_CRED_PATH.
+// If the value is not an absolute path, it is resolved relative to NATS_CREDS_DIR.
+// Returns empty string if unset.
+func GetNatsSysUserCredPath() string {
+	p := os.Getenv(EnvNatsSysUserCredPath)
+	if p == "" {
+		return ""
+	}
+	if filepath.IsAbs(p) {
+		return p
+	}
+	return filepath.Join(GetNatsCredsDir(), p)
+}
+
+// GetNatsClientURL returns the NATS client URL from NATS_CLIENT_URL, or DefaultNatsClientURL (nats://127.0.0.1:4222) if unset.
+func GetNatsClientURL() string {
+	if u := os.Getenv(EnvNatsClientURL); u != "" {
+		return u
+	}
+	return DefaultNatsClientURL
+}
+
+// GetJetStreamStoreDir returns the JetStream store directory. If NATS_JETSTREAM_STORE_DIR is set, uses it
+// (resolving relative paths against the server config file's directory). Otherwise parses jetstream.store_dir
+// from the server config file. Returns empty string if unset or parse fails.
+func GetJetStreamStoreDir(serverConfPath string) string {
+	if p := os.Getenv(EnvNatsJetStreamStoreDir); p != "" {
+		if filepath.IsAbs(p) {
+			return p
+		}
+		return filepath.Join(filepath.Dir(serverConfPath), p)
+	}
+	storeDir := parseJetStreamStoreDirFromConfig(serverConfPath)
+	if storeDir == "" {
+		return ""
+	}
+	if filepath.IsAbs(storeDir) {
+		return storeDir
+	}
+	return filepath.Join(filepath.Dir(serverConfPath), storeDir)
+}
+
+// parseJetStreamStoreDirFromConfig reads the server config file and extracts jetstream.store_dir value.
+// Returns empty string on any error or if not found.
+func parseJetStreamStoreDirFromConfig(path string) string {
+	f, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+	var inJetstream bool
+	var braceCount int
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+		if strings.Contains(line, "jetstream") && strings.Contains(line, "{") {
+			inJetstream = true
+			braceCount = 1
+			continue
+		}
+		if inJetstream {
+			if strings.Contains(line, "{") {
+				braceCount++
+			}
+			if strings.Contains(line, "}") {
+				braceCount--
+				if braceCount == 0 {
+					inJetstream = false
+				}
+			}
+			if strings.HasPrefix(line, "store_dir") {
+				idx := strings.Index(line, ":")
+				if idx == -1 {
+					continue
+				}
+				val := strings.TrimSpace(line[idx+1:])
+				val = strings.Trim(val, `"`)
+				if val != "" {
+					return val
+				}
+			}
+		}
+	}
+	return ""
 }
