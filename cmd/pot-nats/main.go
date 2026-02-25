@@ -16,8 +16,10 @@ import (
 	"context"
 	"log"
 	"os"
+	"sync"
 	"time"
 
+	"github.com/datasance/nats-server/internal/claimspush"
 	"github.com/datasance/nats-server/internal/config"
 	"github.com/datasance/nats-server/internal/jspurge"
 	"github.com/datasance/nats-server/internal/nats"
@@ -66,51 +68,64 @@ func main() {
 	ctx := context.Background()
 	debounce := 500 * time.Millisecond
 
-	// Watch server config file; on change trigger reload (SIGHUP)
-	go watch.WatchConfigFile(ctx, natsConf, debounce, func() {
-		if err := server.Reload(); err != nil {
-			log.Printf("Reload after config change: %v", err)
+	// Coalescer: multiple watchers report a cause; one debounced reload runs, with reconcile+claims push only when jwt was a cause.
+	var (
+		coalescerMu    sync.Mutex
+		coalescerCauses map[string]bool
+		coalescerTimer *time.Timer
+	)
+	scheduleReload := func(cause string) {
+		coalescerMu.Lock()
+		defer coalescerMu.Unlock()
+		if coalescerCauses == nil {
+			coalescerCauses = make(map[string]bool)
 		}
-	})
+		coalescerCauses[cause] = true
+		if coalescerTimer != nil {
+			coalescerTimer.Stop()
+		}
+		coalescerTimer = time.AfterFunc(debounce, func() {
+			coalescerMu.Lock()
+			causes := coalescerCauses
+			coalescerCauses = nil
+			coalescerTimer = nil
+			coalescerMu.Unlock()
+			if err := server.Reload(); err != nil {
+				log.Printf("Reload after change: %v", err)
+			}
+			if causes["jwt"] {
+				go func() {
+					time.Sleep(reconcileAfterReload)
+					runJetStreamReconcile(natsConf, natsJWTDir)
+					credsPath := config.GetNatsSysUserCredPath()
+					clientURL := config.GetNatsClientURL()
+					claimspush.PushAccountJWTs(ctx, natsJWTDir, clientURL, credsPath, 10*time.Second)
+				}()
+			}
+		})
+	}
+
+	// Watch server config file; on change trigger coalesced reload
+	go watch.WatchConfigFile(ctx, natsConf, debounce, func() { scheduleReload("config") })
 
 	// Watch account config file if it exists
 	if watch.FileExists(natsAccounts) {
-		go watch.WatchConfigFile(ctx, natsAccounts, debounce, func() {
-			if err := server.Reload(); err != nil {
-				log.Printf("Reload after accounts change: %v", err)
-			}
-		})
+		go watch.WatchConfigFile(ctx, natsAccounts, debounce, func() { scheduleReload("accounts") })
 	}
 
 	// Watch SSL directory if it exists
 	if info, err := os.Stat(natsSSLDir); err == nil && info.IsDir() {
-		go watch.WatchDir(ctx, natsSSLDir, debounce, func() {
-			if err := server.Reload(); err != nil {
-				log.Printf("Reload after SSL dir change: %v", err)
-			}
-		})
+		go watch.WatchDir(ctx, natsSSLDir, debounce, func() { scheduleReload("ssl") })
 	}
 
-	// Watch JWT directory if it exists; on change reload and reconcile JetStream (purge removed accounts).
+	// Watch JWT directory if it exists; on change coalesced reload, then reconcile and claims push when jwt is a cause
 	if info, err := os.Stat(natsJWTDir); err == nil && info.IsDir() {
-		go watch.WatchDir(ctx, natsJWTDir, debounce, func() {
-			if err := server.Reload(); err != nil {
-				log.Printf("Reload after JWT dir change: %v", err)
-			}
-			go func() {
-				time.Sleep(reconcileAfterReload)
-				runJetStreamReconcile(natsConf, natsJWTDir)
-			}()
-		})
+		go watch.WatchDir(ctx, natsJWTDir, debounce, func() { scheduleReload("jwt") })
 	}
 
 	// Watch creds directory if it exists
 	if info, err := os.Stat(natsCredsDir); err == nil && info.IsDir() {
-		go watch.WatchDir(ctx, natsCredsDir, debounce, func() {
-			if err := server.Reload(); err != nil {
-				log.Printf("Reload after creds dir change: %v", err)
-			}
-		})
+		go watch.WatchDir(ctx, natsCredsDir, debounce, func() { scheduleReload("creds") })
 	}
 
 	err := <-exitCh
