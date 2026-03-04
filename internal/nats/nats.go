@@ -84,3 +84,20 @@ func (s *Server) Reload() error {
 	log.Printf("Sent SIGHUP to nats-server for config reload")
 	return nil
 }
+
+// Stop sends SIGINT to the running nats-server process for graceful shutdown.
+// The process will exit; the caller should wait for the exit on exitCh and may then call Start again (restart).
+func (s *Server) Stop() error {
+	s.mu.Lock()
+	cmd := s.cmd
+	s.mu.Unlock()
+
+	if cmd == nil || cmd.Process == nil {
+		return fmt.Errorf("nats-server not running")
+	}
+	if err := cmd.Process.Signal(syscall.SIGINT); err != nil {
+		return fmt.Errorf("failed to send SIGINT: %w", err)
+	}
+	log.Printf("Sent SIGINT to nats-server for graceful stop (restart)")
+	return nil
+}

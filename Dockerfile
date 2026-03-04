@@ -21,7 +21,7 @@ RUN mkdir -p /out && \
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest AS user-stage
 RUN microdnf install -y ca-certificates shadow-utils && microdnf install -y tzdata && microdnf reinstall -y tzdata && microdnf clean all -y
 RUN useradd --uid 10000 --create-home runner
-RUN mkdir -p /home/runner/run /home/runner/data && chown -R runner:runner /home/runner
+RUN mkdir -p /home/runner/run /home/runner/data /home/runner/bin /home/runner/nats/jwt && chown -R runner:runner /home/runner
 
 # Stage runtime files so final image can use a single COPY layer
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest AS runtime-staging

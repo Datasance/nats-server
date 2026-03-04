@@ -11,7 +11,9 @@ Both **Kubernetes** (PoT-controller mounting ConfigMaps/Secrets) and **PoT edge*
 | `NATS_CONF`         | `/etc/nats/config/server.conf`   | Server config file path (passed to nats-server as `-c`).                    |
 | `NATS_ACCOUNTS`     | `/etc/nats/config/accounts.conf` | Account config file; watched for changes and triggers reload.               |
 | `NATS_SSL_DIR`      | `/etc/nats/certs`           | Directory for TLS material; watched for changes and triggers reload.        |
-| `NATS_JWT_DIR`      | `/etc/nats/jwt`             | Directory for JWT assets; watched for changes and triggers reload.          |
+| `NATS_JWT_DIR`      | `/home/runner/nats/jwt`     | Writable directory for JWT assets used by nats-server resolver (server config must point here). Synced from `NATS_JWT_MOUNT_DIR` at startup and on change. |
+| `NATS_JWT_MOUNT_DIR`| `/tmp/nats/jwt`             | Read-only mount (e.g. K8s/PoT) where account JWTs are placed. Watched for changes; contents are synced into `NATS_JWT_DIR` (copy and remove orphans) before reload. |
+| `NATS_SERVER_MODE`  | `server`                   | `server` (full reload on any change; reconcile + claims push on JWT) or `leaf` (reload only on SSL/TLS cert change; reconcile + claims push on JWT; full resolver). |
 | `NATS_CREDS_DIR`    | `/etc/nats/creds/`          | Directory for creds files; watched for changes and triggers reload.         |
 | `NATS_SERVER_BIN`   | `/home/runner/bin/nats-server` | Path to the nats-server binary (override for local dev, e.g. `nats-server`). |
 | `NATS_MONITOR_PORT` | `8222`                    | HTTP monitoring port (nats-server `-m`). Set to `0` to disable.             |
@@ -29,7 +31,7 @@ The server config file may use **environment variable placeholders** (e.g. `$SER
 
 ## Reload behaviour
 
-The wrapper watches `NATS_CONF`, `NATS_ACCOUNTS` (if present), `NATS_SSL_DIR`, `NATS_JWT_DIR`, and `NATS_CREDS_DIR` (directory watchers start only if paths exist). On any change (after a short debounce), it sends **SIGHUP** to the running nats-server process. NATS reloads config and certs without restart.
+The wrapper watches `NATS_CONF`, `NATS_ACCOUNTS` (if present), `NATS_SSL_DIR`, `NATS_JWT_MOUNT_DIR` (if present), and `NATS_CREDS_DIR` (directory watchers start only if paths exist). Before starting nats-server, and on each change to `NATS_JWT_MOUNT_DIR`, it syncs `*.jwt` files from the mount dir into `NATS_JWT_DIR` (copy and remove orphans so the JWT dir exactly mirrors the mount). It sends **SIGHUP** when appropriate: **server** mode on any change; **leaf** mode only when `NATS_SSL_DIR` (SSL/TLS certs) changes. When the cause is JWT, after reload the wrapper runs JetStream account reconciliation and pushes account JWTs via `$SYS.REQ.CLAIMS.UPDATE` for both server and leaf (leaf uses full resolver).
 
 ## JetStream account purge (reconcile on account removal)
 

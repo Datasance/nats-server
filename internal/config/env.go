@@ -25,6 +25,8 @@ const (
 	EnvNatsAccounts           = "NATS_ACCOUNTS"
 	EnvNatsSSLDir             = "NATS_SSL_DIR"
 	EnvNatsJWTDir             = "NATS_JWT_DIR"
+	EnvNatsJWTMountDir        = "NATS_JWT_MOUNT_DIR"
+	EnvNatsServerMode         = "NATS_SERVER_MODE"
 	EnvNatsCredsDir           = "NATS_CREDS_DIR"
 	EnvNatsServerBin          = "NATS_SERVER_BIN"
 	EnvNatsMonitorPort        = "NATS_MONITOR_PORT"
@@ -32,13 +34,15 @@ const (
 	EnvNatsClientURL          = "NATS_CLIENT_URL"
 	EnvNatsJetStreamStoreDir  = "NATS_JETSTREAM_STORE_DIR"
 	DefaultNatsConf           = "/etc/nats/config/server.conf"
-	DefaultNatsAccounts      = "/etc/nats/config/accounts.conf"
+	DefaultNatsAccounts       = "/etc/nats/config/accounts.conf"
 	DefaultNatsSSLDir         = "/etc/nats/certs"
-	DefaultNatsJWTDir         = "/etc/nats/jwt"
+	DefaultNatsJWTDir         = "/home/runner/nats/jwt"
+	DefaultNatsJWTMountDir    = "/tmp/nats/jwt"
+	DefaultNatsServerMode     = "server"
 	DefaultNatsCredsDir       = "/etc/nats/creds/"
 	DefaultNatsServerBin      = "/home/runner/bin/nats-server"
 	DefaultNatsMonitorPort    = 8222
-	DefaultNatsClientURL = "nats://127.0.0.1:4222"
+	DefaultNatsClientURL      = "nats://127.0.0.1:4222"
 )
 
 // GetNatsConf returns the server config file path from NATS_CONF, or DefaultNatsConf if unset.
@@ -71,6 +75,24 @@ func GetNatsJWTDir() string {
 		return p
 	}
 	return DefaultNatsJWTDir
+}
+
+// GetNatsJWTMountDir returns the JWT mount directory from NATS_JWT_MOUNT_DIR, or DefaultNatsJWTMountDir if unset.
+func GetNatsJWTMountDir() string {
+	if p := os.Getenv(EnvNatsJWTMountDir); p != "" {
+		return p
+	}
+	return DefaultNatsJWTMountDir
+}
+
+// GetNatsServerMode returns the server mode from NATS_SERVER_MODE, or DefaultNatsServerMode if unset.
+// Returned value is trimmed and lowercased for comparison (e.g. "server", "leaf").
+func GetNatsServerMode() string {
+	s := strings.TrimSpace(os.Getenv(EnvNatsServerMode))
+	if s == "" {
+		return DefaultNatsServerMode
+	}
+	return strings.ToLower(s)
 }
 
 // GetNatsCredsDir returns the creds directory from NATS_CREDS_DIR, or DefaultNatsCredsDir if unset.
