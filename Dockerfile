@@ -1,4 +1,4 @@
-# Build pot-nats wrapper and install nats-server
+# Build iofog-nats wrapper and install nats-server
 FROM --platform=$BUILDPLATFORM golang:1.24-alpine AS go-builder
 ARG TARGETOS
 ARG TARGETARCH
@@ -8,7 +8,7 @@ WORKDIR /build
 COPY . .
 
 
-RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o pot-nats ./cmd/pot-nats
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o iofog-nats ./cmd/iofog-nats
 
 
 RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/nats-io/nats-server/v2@v2.12.4
@@ -56,7 +56,7 @@ FROM registry.access.redhat.com/ubi9/ubi-micro:latest
 COPY --from=runtime-staging /staging/ /
 
 # Copy from the normalized /out directory
-COPY --from=go-builder /build/pot-nats /home/runner/bin/pot-nats
+COPY --from=go-builder /build/iofog-nats /home/runner/bin/iofog-nats
 COPY --from=go-builder /out/nats-server /home/runner/bin/nats-server
 
 COPY LICENSE /licenses/LICENSE
@@ -64,4 +64,4 @@ COPY LICENSE /licenses/LICENSE
 USER 10000
 WORKDIR /home/runner
 
-CMD ["/home/runner/bin/pot-nats"]
+CMD ["/home/runner/bin/iofog-nats"]

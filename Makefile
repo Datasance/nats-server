@@ -1,10 +1,10 @@
-# pot-nats – NATS server wrapper for Datasance PoT
+# iofog-nats – NATS server wrapper for Eclipse ioFog
 
-BINARY      := pot-nats
-CMD_PATH    := ./cmd/pot-nats
+BINARY      := iofog-nats
+CMD_PATH    := ./cmd/iofog-nats
 BINARY_PATH := bin/$(BINARY)
 LDFLAGS     := -trimpath -ldflags="-s -w"
-IMAGE       ?= pot-nats:latest
+IMAGE       ?= iofog-nats:latest
 
 .PHONY: all build test lint fmt fmt-check clean install docker-build
 

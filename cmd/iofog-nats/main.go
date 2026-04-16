@@ -20,12 +20,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/datasance/nats-server/internal/claimspush"
-	"github.com/datasance/nats-server/internal/config"
-	"github.com/datasance/nats-server/internal/jspurge"
-	"github.com/datasance/nats-server/internal/jwtcopy"
-	"github.com/datasance/nats-server/internal/nats"
-	"github.com/datasance/nats-server/internal/watch"
+	"github.com/eclipse-iofog/nats-server/internal/claimspush"
+	"github.com/eclipse-iofog/nats-server/internal/config"
+	"github.com/eclipse-iofog/nats-server/internal/jspurge"
+	"github.com/eclipse-iofog/nats-server/internal/jwtcopy"
+	"github.com/eclipse-iofog/nats-server/internal/nats"
+	"github.com/eclipse-iofog/nats-server/internal/watch"
 )
 
 const (
@@ -43,7 +43,7 @@ func main() {
 	natsJWTMountDir := config.GetNatsJWTMountDir()
 	natsCredsDir := config.GetNatsCredsDir()
 
-	// Wait for server config file to exist (e.g. volume-mounted by K8s or Pot agent)
+	// Wait for server config file to exist (e.g. volume-mounted by K8s or ioFog agent)
 	for i := 0; i < configWaitAttempts; i++ {
 		if watch.FileExists(natsConf) {
 			break
@@ -117,7 +117,7 @@ func main() {
 		if coalescerTimer != nil {
 			coalescerTimer.Stop()
 		}
-			coalescerTimer = time.AfterFunc(debounce, func() {
+		coalescerTimer = time.AfterFunc(debounce, func() {
 			coalescerMu.Lock()
 			causes := coalescerCauses
 			coalescerCauses = nil

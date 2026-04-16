@@ -21,8 +21,8 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/datasance/nats-server/internal/config"
-	execpkg "github.com/datasance/nats-server/internal/exec"
+	"github.com/eclipse-iofog/nats-server/internal/config"
+	execpkg "github.com/eclipse-iofog/nats-server/internal/exec"
 )
 
 type Server struct {

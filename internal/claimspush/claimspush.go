@@ -19,7 +19,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/datasance/nats-server/internal/jspurge"
+	"github.com/eclipse-iofog/nats-server/internal/jspurge"
 	"github.com/nats-io/nats.go"
 )
 

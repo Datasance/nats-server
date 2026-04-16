@@ -1,4 +1,4 @@
-module github.com/datasance/nats-server
+module github.com/eclipse-iofog/nats-server
 
 go 1.24
 
