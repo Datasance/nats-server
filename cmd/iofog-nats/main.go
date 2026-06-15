@@ -1,15 +1,3 @@
-/*
- *  *******************************************************************************
- *  * Copyright (c) 2023 Datasance Teknoloji A.S.
- *  *
- *  * This program and the accompanying materials are made available under the
- *  * terms of the Eclipse Public License v. 2.0 which is available at
- *  * http://www.eclipse.org/legal/epl-2.0
- *  *
- *  * SPDX-License-Identifier: EPL-2.0
- *  *******************************************************************************
- */
-
 package main
 
 import (
@@ -38,7 +26,7 @@ const (
 func main() {
 	natsConf := config.GetNatsConf()
 	natsAccounts := config.GetNatsAccounts()
-	natsSSLDir := config.GetNatsSSLDir()
+	natsTLSDir := config.GetNatsTLSDir()
 	natsJWTDir := config.GetNatsJWTDir()
 	natsJWTMountDir := config.GetNatsJWTMountDir()
 	natsCredsDir := config.GetNatsCredsDir()
@@ -147,9 +135,9 @@ func main() {
 					log.Printf("JWT sync after change: copied=%d removed=%d", copied, removed)
 				}
 			}
-			// Leaf supports reload only for SSL/TLS cert changes; server supports full reload.
-			// For leaf with non-SSL changes (config, accounts, jwt, creds), SIGINT and restart so new config is loaded.
-			if config.GetNatsServerMode() != "leaf" || causes["ssl"] {
+			// Leaf supports reload only for TLS cert changes; server supports full reload.
+			// For leaf with non-TLS changes (config, accounts, jwt, creds), SIGINT and restart so new config is loaded.
+			if config.GetNatsServerMode() != "leaf" || causes["tls"] {
 				if err := server.Reload(); err != nil {
 					log.Printf("Reload after change: %v", err)
 				}
@@ -181,9 +169,9 @@ func main() {
 		go watch.WatchConfigFile(ctx, natsAccounts, debounce, func() { scheduleReload("accounts") })
 	}
 
-	// Watch SSL directory if it exists
-	if info, err := os.Stat(natsSSLDir); err == nil && info.IsDir() {
-		go watch.WatchDir(ctx, natsSSLDir, debounce, func() { scheduleReload("ssl") })
+	// Watch TLS directory if it exists
+	if info, err := os.Stat(natsTLSDir); err == nil && info.IsDir() {
+		go watch.WatchDir(ctx, natsTLSDir, debounce, func() { scheduleReload("tls") })
 	}
 
 	// Watch JWT mount directory if it exists; on change sync to JWT dir, coalesced reload/restart, then reconcile and claims push

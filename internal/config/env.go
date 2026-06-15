@@ -1,28 +1,19 @@
-/*
- *  *******************************************************************************
- *  * Copyright (c) 2023 Datasance Teknoloji A.S.
- *  *
- *  * This program and the accompanying materials are made available under the
- *  * terms of the Eclipse Public License v. 2.0 which is available at
- *  * http://www.eclipse.org/legal/epl-2.0
- *  *
- *  * SPDX-License-Identifier: EPL-2.0
- *  *******************************************************************************
- */
-
 package config
 
 import (
 	"bufio"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const (
 	EnvNatsConf               = "NATS_CONF"
 	EnvNatsAccounts           = "NATS_ACCOUNTS"
+	EnvNatsTLSDir             = "NATS_TLS_DIR"
 	EnvNatsSSLDir             = "NATS_SSL_DIR"
 	EnvNatsJWTDir             = "NATS_JWT_DIR"
 	EnvNatsJWTMountDir        = "NATS_JWT_MOUNT_DIR"
@@ -35,7 +26,7 @@ const (
 	EnvNatsJetStreamStoreDir  = "NATS_JETSTREAM_STORE_DIR"
 	DefaultNatsConf           = "/etc/nats/config/server.conf"
 	DefaultNatsAccounts       = "/etc/nats/config/accounts.conf"
-	DefaultNatsSSLDir         = "/etc/nats/certs"
+	DefaultNatsTLSDir         = "/etc/nats/certs"
 	DefaultNatsJWTDir         = "/home/runner/nats/jwt"
 	DefaultNatsJWTMountDir    = "/tmp/nats/jwt"
 	DefaultNatsServerMode     = "server"
@@ -61,12 +52,21 @@ func GetNatsAccounts() string {
 	return DefaultNatsAccounts
 }
 
-// GetNatsSSLDir returns the SSL certs directory from NATS_SSL_DIR, or DefaultNatsSSLDir if unset.
-func GetNatsSSLDir() string {
-	if p := os.Getenv(EnvNatsSSLDir); p != "" {
+var natsSSLDirDeprecation sync.Once
+
+// GetNatsTLSDir returns the TLS certs directory from NATS_TLS_DIR, or DefaultNatsTLSDir if unset.
+// If NATS_TLS_DIR is unset, NATS_SSL_DIR is accepted as a deprecated fallback.
+func GetNatsTLSDir() string {
+	if p := os.Getenv(EnvNatsTLSDir); p != "" {
 		return p
 	}
-	return DefaultNatsSSLDir
+	if p := os.Getenv(EnvNatsSSLDir); p != "" {
+		natsSSLDirDeprecation.Do(func() {
+			log.Printf("%s is deprecated; use %s instead", EnvNatsSSLDir, EnvNatsTLSDir)
+		})
+		return p
+	}
+	return DefaultNatsTLSDir
 }
 
 // GetNatsJWTDir returns the JWT directory from NATS_JWT_DIR, or DefaultNatsJWTDir if unset.
