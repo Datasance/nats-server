@@ -1,15 +1,3 @@
-/*
- *  *******************************************************************************
- *  * Copyright (c) 2023 Datasance Teknoloji A.S.
- *  *
- *  * This program and the accompanying materials are made available under the
- *  * terms of the Eclipse Public License v. 2.0 which is available at
- *  * http://www.eclipse.org/legal/epl-2.0
- *  *
- *  * SPDX-License-Identifier: EPL-2.0
- *  *******************************************************************************
- */
-
 package main
 
 import (
@@ -38,7 +26,7 @@ const (
 func main() {
 	natsConf := config.GetNatsConf()
 	natsAccounts := config.GetNatsAccounts()
-	natsSSLDir := config.GetNatsSSLDir()
+	natsTLSDir := config.GetNatsTLSDir()
 	natsJWTDir := config.GetNatsJWTDir()
 	natsJWTMountDir := config.GetNatsJWTMountDir()
 	natsCredsDir := config.GetNatsCredsDir()
@@ -147,9 +135,9 @@ func main() {
 					log.Printf("JWT sync after change: copied=%d removed=%d", copied, removed)
 				}
 			}
-			// Leaf supports reload only for SSL/TLS cert changes; server supports full reload.
-			// For leaf with non-SSL changes (config, accounts, jwt, creds), SIGINT and restart so new config is loaded.
-			if config.GetNatsServerMode() != "leaf" || causes["ssl"] {
+			// Leaf supports reload only for TLS cert changes; server supports full reload.
+			// For leaf with non-TLS changes (config, accounts, jwt, creds), SIGINT and restart so new config is loaded.
+			if config.GetNatsServerMode() != "leaf" || causes["tls"] {
 				if err := server.Reload(); err != nil {
 					log.Printf("Reload after change: %v", err)
 				}
@@ -174,26 +162,26 @@ func main() {
 	}
 
 	// Watch server config file; on change trigger coalesced reload
-	go watch.WatchConfigFile(ctx, natsConf, debounce, func() { scheduleReload("config") })
+	go watch.ConfigFile(ctx, natsConf, debounce, func() { scheduleReload("config") })
 
 	// Watch account config file if it exists
 	if watch.FileExists(natsAccounts) {
-		go watch.WatchConfigFile(ctx, natsAccounts, debounce, func() { scheduleReload("accounts") })
+		go watch.ConfigFile(ctx, natsAccounts, debounce, func() { scheduleReload("accounts") })
 	}
 
-	// Watch SSL directory if it exists
-	if info, err := os.Stat(natsSSLDir); err == nil && info.IsDir() {
-		go watch.WatchDir(ctx, natsSSLDir, debounce, func() { scheduleReload("ssl") })
+	// Watch TLS directory if it exists
+	if info, err := os.Stat(natsTLSDir); err == nil && info.IsDir() {
+		go watch.Dir(ctx, natsTLSDir, debounce, func() { scheduleReload("tls") })
 	}
 
 	// Watch JWT mount directory if it exists; on change sync to JWT dir, coalesced reload/restart, then reconcile and claims push
 	if info, err := os.Stat(natsJWTMountDir); err == nil && info.IsDir() {
-		go watch.WatchDir(ctx, natsJWTMountDir, debounce, func() { scheduleReload("jwt") })
+		go watch.Dir(ctx, natsJWTMountDir, debounce, func() { scheduleReload("jwt") })
 	}
 
 	// Watch creds directory if it exists
 	if info, err := os.Stat(natsCredsDir); err == nil && info.IsDir() {
-		go watch.WatchDir(ctx, natsCredsDir, debounce, func() { scheduleReload("creds") })
+		go watch.Dir(ctx, natsCredsDir, debounce, func() { scheduleReload("creds") })
 	}
 
 	for {
@@ -205,7 +193,7 @@ func main() {
 		}
 		restartMu.Unlock()
 		if r {
-			log.Printf("NATS server stopped for restart, starting again")
+			log.Print("NATS server stopped for restart, starting again")
 			startServer()
 			continue
 		}
@@ -219,7 +207,7 @@ func main() {
 
 // fileSHA256 returns the SHA256 hash of the file at path, or an error if the file cannot be read.
 func fileSHA256(path string) ([32]byte, error) {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 -- config path from NATS_CONF contract
 	if err != nil {
 		return [32]byte{}, err
 	}
@@ -231,7 +219,7 @@ func fileSHA256(path string) ([32]byte, error) {
 func runJetStreamReconcile(serverConfPath, jwtDir string) {
 	storeDir := config.GetJetStreamStoreDir(serverConfPath)
 	if storeDir == "" {
-		log.Printf("ERROR: JetStream store dir not set or unreadable, skipping account purge reconciliation")
+		log.Print("ERROR: JetStream store dir not set or unreadable, skipping account purge reconciliation")
 		return
 	}
 	accountsWithJS, err := jspurge.AccountsFromJetStreamStore(storeDir)
@@ -250,7 +238,7 @@ func runJetStreamReconcile(serverConfPath, jwtDir string) {
 
 	log.Printf("JetStream account reconciliation: store_dir=%s, resolver_accounts=%d, to_purge=%d", storeDir, len(currentResolver), len(toPurge))
 	if credsPath == "" {
-		log.Printf("NATS_SYS_USER_CRED_PATH unset, skipping purge API calls")
+		log.Print("NATS_SYS_USER_CRED_PATH unset, skipping purge API calls")
 		return
 	}
 	ctx := context.Background()

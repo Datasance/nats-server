@@ -1,0 +1,49 @@
+name: Set NATS build environment
+description: Resolves NATS image registry, container image, OCI source, distribution, and GitHub repo from workflow env or github.repository.
+
+runs:
+  using: composite
+  steps:
+    - name: Set image registry and OCI source
+      shell: bash
+      run: |
+        REGISTRY="${{ env.IMAGE_REGISTRY }}"
+        OCI_SOURCE="${{ env.OCI_SOURCE_REPO }}"
+        NATS_IMAGE="${{ env.NATS_CONTAINER_IMAGE }}"
+        if [ -z "$REGISTRY" ] || [ -z "$OCI_SOURCE" ] || [ -z "$NATS_IMAGE" ]; then
+          case "${{ github.repository }}" in
+            eclipse-iofog/nats-server)
+              REGISTRY="${REGISTRY:-ghcr.io/eclipse-iofog}"
+              OCI_SOURCE="${OCI_SOURCE:-https://github.com/eclipse-iofog/nats-server}"
+              NATS_IMAGE="${NATS_IMAGE:-ghcr.io/eclipse-iofog/nats}"
+              ;;
+            *)
+              REGISTRY="${REGISTRY:-ghcr.io/datasance}"
+              OCI_SOURCE="${OCI_SOURCE:-https://github.com/Datasance/nats-server}"
+              NATS_IMAGE="${NATS_IMAGE:-ghcr.io/datasance/nats}"
+              ;;
+          esac
+        fi
+        echo "IMAGE_REGISTRY=$REGISTRY" >> "${GITHUB_ENV}"
+        echo "OCI_SOURCE_REPO=$OCI_SOURCE" >> "${GITHUB_ENV}"
+        echo "NATS_CONTAINER_IMAGE=$NATS_IMAGE" >> "${GITHUB_ENV}"
+
+    - name: Set NATS distribution
+      shell: bash
+      run: |
+        DISTRIBUTION="${{ env.NATS_DISTRIBUTION }}"
+        GITHUB_REPO="${{ env.NATS_GITHUB_REPO }}"
+        if [ -z "$DISTRIBUTION" ] || [ -z "$GITHUB_REPO" ]; then
+          case "${{ github.repository }}" in
+            eclipse-iofog/nats-server)
+              DISTRIBUTION="${DISTRIBUTION:-iofog}"
+              GITHUB_REPO="${GITHUB_REPO:-eclipse-iofog/nats-server}"
+              ;;
+            *)
+              DISTRIBUTION="${DISTRIBUTION:-datasance}"
+              GITHUB_REPO="${GITHUB_REPO:-Datasance/nats-server}"
+              ;;
+          esac
+        fi
+        echo "NATS_DISTRIBUTION=$DISTRIBUTION" >> "${GITHUB_ENV}"
+        echo "NATS_GITHUB_REPO=$GITHUB_REPO" >> "${GITHUB_ENV}"

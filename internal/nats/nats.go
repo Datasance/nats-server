@@ -1,18 +1,7 @@
-/*
- *  *******************************************************************************
- *  * Copyright (c) 2023 Datasance Teknoloji A.S.
- *  *
- *  * This program and the accompanying materials are made available under the
- *  * terms of the Eclipse Public License v. 2.0 which is available at
- *  * http://www.eclipse.org/legal/epl-2.0
- *  *
- *  * SPDX-License-Identifier: EPL-2.0
- *  *******************************************************************************
- */
-
 package nats
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"os/exec"
@@ -39,7 +28,7 @@ func (s *Server) Start(serverConfPath string, exitCh chan<- error) error {
 	defer s.mu.Unlock()
 
 	if s.cmd != nil {
-		return fmt.Errorf("nats-server already started")
+		return errors.New("nats-server already started")
 	}
 
 	bin := config.GetNatsServerBin()
@@ -76,12 +65,12 @@ func (s *Server) Reload() error {
 	s.mu.Unlock()
 
 	if cmd == nil || cmd.Process == nil {
-		return fmt.Errorf("nats-server not running")
+		return errors.New("nats-server not running")
 	}
 	if err := cmd.Process.Signal(syscall.SIGHUP); err != nil {
 		return fmt.Errorf("failed to send SIGHUP: %w", err)
 	}
-	log.Printf("Sent SIGHUP to nats-server for config reload")
+	log.Print("Sent SIGHUP to nats-server for config reload")
 	return nil
 }
 
@@ -93,11 +82,11 @@ func (s *Server) Stop() error {
 	s.mu.Unlock()
 
 	if cmd == nil || cmd.Process == nil {
-		return fmt.Errorf("nats-server not running")
+		return errors.New("nats-server not running")
 	}
 	if err := cmd.Process.Signal(syscall.SIGINT); err != nil {
 		return fmt.Errorf("failed to send SIGINT: %w", err)
 	}
-	log.Printf("Sent SIGINT to nats-server for graceful stop (restart)")
+	log.Print("Sent SIGINT to nats-server for graceful stop (restart)")
 	return nil
 }

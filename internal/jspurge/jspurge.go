@@ -1,15 +1,3 @@
-/*
- *  *******************************************************************************
- *  * Copyright (c) 2023 Datasance Teknoloji A.S.
- *  *
- *  * This program and the accompanying materials are made available under the
- *  * terms of the Eclipse Public License v. 2.0 which is available at
- *  * http://www.eclipse.org/legal/epl-2.0
- *  *
- *  * SPDX-License-Identifier: EPL-2.0
- *  *******************************************************************************
- */
-
 package jspurge
 
 import (
@@ -28,19 +16,19 @@ const (
 	purgeRequestTimeout    = 10 * time.Second
 )
 
-// ApiResponse is the standard JetStream API response (type + optional error).
-type ApiResponse struct {
+// APIResponse is the standard JetStream API response (type + optional error).
+type APIResponse struct {
 	Type  string    `json:"type"`
-	Error *ApiError `json:"error,omitempty"`
+	Error *APIError `json:"error,omitempty"`
 }
 
-// ApiError is the error field in ApiResponse.
-type ApiError struct {
+// APIError is the error field in APIResponse.
+type APIError struct {
 	Code        int    `json:"code"`
 	Description string `json:"description,omitempty"`
 }
 
-func (e *ApiError) Error() string {
+func (e *APIError) Error() string {
 	if e == nil {
 		return ""
 	}
@@ -49,7 +37,7 @@ func (e *ApiError) Error() string {
 
 // JSApiAccountPurgeResponse is the response for account purge (includes initiated).
 type JSApiAccountPurgeResponse struct {
-	ApiResponse
+	APIResponse
 	Initiated bool `json:"initiated,omitempty"`
 }
 
@@ -140,9 +128,7 @@ func PurgeAccount(ctx context.Context, natsURL, credsPath, accountName string) e
 	if resp.Error != nil {
 		return resp.Error
 	}
-	if !resp.Initiated {
-		// Server accepted but did not report initiated; treat as success for idempotency
-	}
+	_ = resp.Initiated // server may omit initiated; treat as success for idempotency
 	return nil
 }
 

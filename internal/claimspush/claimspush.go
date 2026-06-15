@@ -1,15 +1,3 @@
-/*
- *  *******************************************************************************
- *  * Copyright (c) 2023 Datasance Teknoloji A.S.
- *  *
- *  * This program and the accompanying materials are made available under the
- *  * terms of the Eclipse Public License v. 2.0 which is available at
- *  * http://www.eclipse.org/legal/epl-2.0
- *  *
- *  * SPDX-License-Identifier: EPL-2.0
- *  *******************************************************************************
- */
-
 package claimspush
 
 import (
@@ -62,7 +50,7 @@ func PushAccountJWTs(ctx context.Context, jwtDir, clientURL, credsPath string, t
 	var pushed, failed int
 	for _, account := range accounts {
 		jwtPath := filepath.Join(jwtDir, account+".jwt")
-		raw, err := os.ReadFile(jwtPath)
+		raw, err := os.ReadFile(jwtPath) // #nosec G304 -- JWT path derived from resolver dir listing
 		if err != nil {
 			log.Printf("Claims update: failed to read %s: %v", jwtPath, err)
 			failed++

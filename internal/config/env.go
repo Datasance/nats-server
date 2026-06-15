@@ -1,48 +1,39 @@
-/*
- *  *******************************************************************************
- *  * Copyright (c) 2023 Datasance Teknoloji A.S.
- *  *
- *  * This program and the accompanying materials are made available under the
- *  * terms of the Eclipse Public License v. 2.0 which is available at
- *  * http://www.eclipse.org/legal/epl-2.0
- *  *
- *  * SPDX-License-Identifier: EPL-2.0
- *  *******************************************************************************
- */
-
 package config
 
 import (
 	"bufio"
+	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 const (
-	EnvNatsConf               = "NATS_CONF"
-	EnvNatsAccounts           = "NATS_ACCOUNTS"
-	EnvNatsSSLDir             = "NATS_SSL_DIR"
-	EnvNatsJWTDir             = "NATS_JWT_DIR"
-	EnvNatsJWTMountDir        = "NATS_JWT_MOUNT_DIR"
-	EnvNatsServerMode         = "NATS_SERVER_MODE"
-	EnvNatsCredsDir           = "NATS_CREDS_DIR"
-	EnvNatsServerBin          = "NATS_SERVER_BIN"
-	EnvNatsMonitorPort        = "NATS_MONITOR_PORT"
-	EnvNatsSysUserCredPath    = "NATS_SYS_USER_CRED_PATH"
-	EnvNatsClientURL          = "NATS_CLIENT_URL"
-	EnvNatsJetStreamStoreDir  = "NATS_JETSTREAM_STORE_DIR"
-	DefaultNatsConf           = "/etc/nats/config/server.conf"
-	DefaultNatsAccounts       = "/etc/nats/config/accounts.conf"
-	DefaultNatsSSLDir         = "/etc/nats/certs"
-	DefaultNatsJWTDir         = "/home/runner/nats/jwt"
-	DefaultNatsJWTMountDir    = "/tmp/nats/jwt"
-	DefaultNatsServerMode     = "server"
-	DefaultNatsCredsDir       = "/etc/nats/creds/"
-	DefaultNatsServerBin      = "/home/runner/bin/nats-server"
-	DefaultNatsMonitorPort    = 8222
-	DefaultNatsClientURL      = "nats://127.0.0.1:4222"
+	EnvNatsConf              = "NATS_CONF"
+	EnvNatsAccounts          = "NATS_ACCOUNTS"
+	EnvNatsTLSDir            = "NATS_TLS_DIR"
+	EnvNatsSSLDir            = "NATS_SSL_DIR"
+	EnvNatsJWTDir            = "NATS_JWT_DIR"
+	EnvNatsJWTMountDir       = "NATS_JWT_MOUNT_DIR"
+	EnvNatsServerMode        = "NATS_SERVER_MODE"
+	EnvNatsCredsDir          = "NATS_CREDS_DIR" // #nosec G101 -- env var name, not a credential
+	EnvNatsServerBin         = "NATS_SERVER_BIN"
+	EnvNatsMonitorPort       = "NATS_MONITOR_PORT"
+	EnvNatsSysUserCredPath   = "NATS_SYS_USER_CRED_PATH" // #nosec G101 -- env var name, not a credential
+	EnvNatsClientURL         = "NATS_CLIENT_URL"
+	EnvNatsJetStreamStoreDir = "NATS_JETSTREAM_STORE_DIR"
+	DefaultNatsConf          = "/etc/nats/config/server.conf"
+	DefaultNatsAccounts      = "/etc/nats/config/accounts.conf"
+	DefaultNatsTLSDir        = "/etc/nats/certs"
+	DefaultNatsJWTDir        = "/home/runner/nats/jwt"
+	DefaultNatsJWTMountDir   = "/tmp/nats/jwt"
+	DefaultNatsServerMode    = "server"
+	DefaultNatsCredsDir      = "/etc/nats/creds/" // #nosec G101 -- default mount path, not a credential
+	DefaultNatsServerBin     = "/home/runner/bin/nats-server"
+	DefaultNatsMonitorPort   = 8222
+	DefaultNatsClientURL     = "nats://127.0.0.1:4222"
 )
 
 // GetNatsConf returns the server config file path from NATS_CONF, or DefaultNatsConf if unset.
@@ -61,12 +52,21 @@ func GetNatsAccounts() string {
 	return DefaultNatsAccounts
 }
 
-// GetNatsSSLDir returns the SSL certs directory from NATS_SSL_DIR, or DefaultNatsSSLDir if unset.
-func GetNatsSSLDir() string {
-	if p := os.Getenv(EnvNatsSSLDir); p != "" {
+var natsSSLDirDeprecation sync.Once
+
+// GetNatsTLSDir returns the TLS certs directory from NATS_TLS_DIR, or DefaultNatsTLSDir if unset.
+// If NATS_TLS_DIR is unset, NATS_SSL_DIR is accepted as a deprecated fallback.
+func GetNatsTLSDir() string {
+	if p := os.Getenv(EnvNatsTLSDir); p != "" {
 		return p
 	}
-	return DefaultNatsSSLDir
+	if p := os.Getenv(EnvNatsSSLDir); p != "" {
+		natsSSLDirDeprecation.Do(func() {
+			log.Printf("%s is deprecated; use %s instead", EnvNatsSSLDir, EnvNatsTLSDir)
+		})
+		return p
+	}
+	return DefaultNatsTLSDir
 }
 
 // GetNatsJWTDir returns the JWT directory from NATS_JWT_DIR, or DefaultNatsJWTDir if unset.
@@ -170,7 +170,7 @@ func GetJetStreamStoreDir(serverConfPath string) string {
 // parseJetStreamStoreDirFromConfig reads the server config file and extracts jetstream.store_dir value.
 // Returns empty string on any error or if not found.
 func parseJetStreamStoreDirFromConfig(path string) string {
-	f, err := os.Open(path)
+	f, err := os.Open(path) // #nosec G304 -- server config path from NATS_CONF contract
 	if err != nil {
 		return ""
 	}
