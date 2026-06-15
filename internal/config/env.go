@@ -11,29 +11,29 @@ import (
 )
 
 const (
-	EnvNatsConf               = "NATS_CONF"
-	EnvNatsAccounts           = "NATS_ACCOUNTS"
-	EnvNatsTLSDir             = "NATS_TLS_DIR"
-	EnvNatsSSLDir             = "NATS_SSL_DIR"
-	EnvNatsJWTDir             = "NATS_JWT_DIR"
-	EnvNatsJWTMountDir        = "NATS_JWT_MOUNT_DIR"
-	EnvNatsServerMode         = "NATS_SERVER_MODE"
-	EnvNatsCredsDir           = "NATS_CREDS_DIR"
-	EnvNatsServerBin          = "NATS_SERVER_BIN"
-	EnvNatsMonitorPort        = "NATS_MONITOR_PORT"
-	EnvNatsSysUserCredPath    = "NATS_SYS_USER_CRED_PATH"
-	EnvNatsClientURL          = "NATS_CLIENT_URL"
-	EnvNatsJetStreamStoreDir  = "NATS_JETSTREAM_STORE_DIR"
-	DefaultNatsConf           = "/etc/nats/config/server.conf"
-	DefaultNatsAccounts       = "/etc/nats/config/accounts.conf"
-	DefaultNatsTLSDir         = "/etc/nats/certs"
-	DefaultNatsJWTDir         = "/home/runner/nats/jwt"
-	DefaultNatsJWTMountDir    = "/tmp/nats/jwt"
-	DefaultNatsServerMode     = "server"
-	DefaultNatsCredsDir       = "/etc/nats/creds/"
-	DefaultNatsServerBin      = "/home/runner/bin/nats-server"
-	DefaultNatsMonitorPort    = 8222
-	DefaultNatsClientURL      = "nats://127.0.0.1:4222"
+	EnvNatsConf              = "NATS_CONF"
+	EnvNatsAccounts          = "NATS_ACCOUNTS"
+	EnvNatsTLSDir            = "NATS_TLS_DIR"
+	EnvNatsSSLDir            = "NATS_SSL_DIR"
+	EnvNatsJWTDir            = "NATS_JWT_DIR"
+	EnvNatsJWTMountDir       = "NATS_JWT_MOUNT_DIR"
+	EnvNatsServerMode        = "NATS_SERVER_MODE"
+	EnvNatsCredsDir          = "NATS_CREDS_DIR" // #nosec G101 -- env var name, not a credential
+	EnvNatsServerBin         = "NATS_SERVER_BIN"
+	EnvNatsMonitorPort       = "NATS_MONITOR_PORT"
+	EnvNatsSysUserCredPath   = "NATS_SYS_USER_CRED_PATH" // #nosec G101 -- env var name, not a credential
+	EnvNatsClientURL         = "NATS_CLIENT_URL"
+	EnvNatsJetStreamStoreDir = "NATS_JETSTREAM_STORE_DIR"
+	DefaultNatsConf          = "/etc/nats/config/server.conf"
+	DefaultNatsAccounts      = "/etc/nats/config/accounts.conf"
+	DefaultNatsTLSDir        = "/etc/nats/certs"
+	DefaultNatsJWTDir        = "/home/runner/nats/jwt"
+	DefaultNatsJWTMountDir   = "/tmp/nats/jwt"
+	DefaultNatsServerMode    = "server"
+	DefaultNatsCredsDir      = "/etc/nats/creds/" // #nosec G101 -- default mount path, not a credential
+	DefaultNatsServerBin     = "/home/runner/bin/nats-server"
+	DefaultNatsMonitorPort   = 8222
+	DefaultNatsClientURL     = "nats://127.0.0.1:4222"
 )
 
 // GetNatsConf returns the server config file path from NATS_CONF, or DefaultNatsConf if unset.
@@ -170,7 +170,7 @@ func GetJetStreamStoreDir(serverConfPath string) string {
 // parseJetStreamStoreDirFromConfig reads the server config file and extracts jetstream.store_dir value.
 // Returns empty string on any error or if not found.
 func parseJetStreamStoreDirFromConfig(path string) string {
-	f, err := os.Open(path)
+	f, err := os.Open(path) // #nosec G304 -- server config path from NATS_CONF contract
 	if err != nil {
 		return ""
 	}

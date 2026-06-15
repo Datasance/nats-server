@@ -50,7 +50,7 @@ func PushAccountJWTs(ctx context.Context, jwtDir, clientURL, credsPath string, t
 	var pushed, failed int
 	for _, account := range accounts {
 		jwtPath := filepath.Join(jwtDir, account+".jwt")
-		raw, err := os.ReadFile(jwtPath)
+		raw, err := os.ReadFile(jwtPath) // #nosec G304 -- JWT path derived from resolver dir listing
 		if err != nil {
 			log.Printf("Claims update: failed to read %s: %v", jwtPath, err)
 			failed++

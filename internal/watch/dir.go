@@ -12,10 +12,10 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-// WatchDir watches basePath (and immediate subdirs) for changes. On any create/write/remove
-// (after debounce), it calls onReload. Runs until ctx is cancelled.
+// Dir watches basePath (and immediate subdirs) for changes. On any create/write/remove
+// (after debounce), it calls onReload. Runs until ctx is canceled.
 // If basePath does not exist, the watcher returns without error (caller may start it when dir appears).
-func WatchDir(ctx context.Context, basePath string, debounce time.Duration, onReload func()) {
+func Dir(ctx context.Context, basePath string, debounce time.Duration, onReload func()) {
 	if debounce <= 0 {
 		debounce = defaultDebounce
 	}

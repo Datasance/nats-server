@@ -2,7 +2,6 @@ package exec
 
 import (
 	"bufio"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -18,7 +17,7 @@ import (
 func Start(name string, args []string, extraEnv []string, workDir string) (*exec.Cmd, error) {
 	log.Printf("Starting command: %s with args: %v", name, args)
 
-	cmd := exec.Command(name, args...)
+	cmd := exec.Command(name, args...) // #nosec G204 -- wrapper exec of configured nats-server binary
 	cmd.Env = append(os.Environ(), extraEnv...)
 	if workDir != "" {
 		cmd.Dir = workDir
@@ -31,7 +30,7 @@ func Start(name string, args []string, extraEnv []string, workDir string) (*exec
 	go func() {
 		scanner := bufio.NewScanner(outReader)
 		for scanner.Scan() {
-			fmt.Println(scanner.Text())
+			log.Println(scanner.Text())
 		}
 	}()
 
@@ -42,7 +41,7 @@ func Start(name string, args []string, extraEnv []string, workDir string) (*exec
 	go func() {
 		scanner := bufio.NewScanner(errReader)
 		for scanner.Scan() {
-			fmt.Println(scanner.Text())
+			log.Println(scanner.Text())
 		}
 	}()
 

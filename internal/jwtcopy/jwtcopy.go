@@ -27,7 +27,7 @@ func SyncMountToJWT(mountDir, jwtDir string) (copied int, removed int, err error
 	if len(mountNames) == 0 {
 		return 0, 0, nil
 	}
-	if err := os.MkdirAll(jwtDir, 0755); err != nil {
+	if err := os.MkdirAll(jwtDir, 0755); err != nil { // #nosec G301 -- JWT dir must be traversable for nats-server resolver
 		return 0, 0, err
 	}
 	for _, name := range mountNames {
@@ -83,12 +83,12 @@ func listJWTFileNames(dir string) ([]string, error) {
 }
 
 func copyFile(src, dst string) error {
-	in, err := os.Open(src)
+	in, err := os.Open(src) // #nosec G304 -- src/dst under operator-controlled JWT mount paths
 	if err != nil {
 		return err
 	}
 	defer in.Close()
-	out, err := os.Create(dst)
+	out, err := os.Create(dst) // #nosec G304 -- src/dst under operator-controlled JWT mount paths
 	if err != nil {
 		return err
 	}

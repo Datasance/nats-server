@@ -13,10 +13,10 @@ import (
 
 const defaultDebounce = 500 * time.Millisecond
 
-// WatchConfigFile watches the config file at configPath for changes. On write/create
-// (after debounce), it calls onReload. Runs until ctx is cancelled.
+// ConfigFile watches the config file at configPath for changes. On write/create
+// (after debounce), it calls onReload. Runs until ctx is canceled.
 // The parent directory of configPath must exist (e.g. volume-mounted).
-func WatchConfigFile(ctx context.Context, configPath string, debounce time.Duration, onReload func()) {
+func ConfigFile(ctx context.Context, configPath string, debounce time.Duration, onReload func()) {
 	if debounce <= 0 {
 		debounce = defaultDebounce
 	}

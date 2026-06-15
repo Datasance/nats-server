@@ -16,19 +16,19 @@ const (
 	purgeRequestTimeout    = 10 * time.Second
 )
 
-// ApiResponse is the standard JetStream API response (type + optional error).
-type ApiResponse struct {
+// APIResponse is the standard JetStream API response (type + optional error).
+type APIResponse struct {
 	Type  string    `json:"type"`
-	Error *ApiError `json:"error,omitempty"`
+	Error *APIError `json:"error,omitempty"`
 }
 
-// ApiError is the error field in ApiResponse.
-type ApiError struct {
+// APIError is the error field in APIResponse.
+type APIError struct {
 	Code        int    `json:"code"`
 	Description string `json:"description,omitempty"`
 }
 
-func (e *ApiError) Error() string {
+func (e *APIError) Error() string {
 	if e == nil {
 		return ""
 	}
@@ -37,7 +37,7 @@ func (e *ApiError) Error() string {
 
 // JSApiAccountPurgeResponse is the response for account purge (includes initiated).
 type JSApiAccountPurgeResponse struct {
-	ApiResponse
+	APIResponse
 	Initiated bool `json:"initiated,omitempty"`
 }
 
@@ -128,9 +128,7 @@ func PurgeAccount(ctx context.Context, natsURL, credsPath, accountName string) e
 	if resp.Error != nil {
 		return resp.Error
 	}
-	if !resp.Initiated {
-		// Server accepted but did not report initiated; treat as success for idempotency
-	}
+	_ = resp.Initiated // server may omit initiated; treat as success for idempotency
 	return nil
 }
 
