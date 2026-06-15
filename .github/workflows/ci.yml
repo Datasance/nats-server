@@ -96,17 +96,7 @@ jobs:
           cache-to: type=gha,mode=max
           tags: ${{ env.NATS_CONTAINER_IMAGE }}:ci
 
-      - name: Check for Dockerfile.edge
-        id: edge
-        run: |
-          if [ -f Dockerfile.edge ]; then
-            echo "exists=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "exists=false" >> "${GITHUB_OUTPUT}"
-          fi
-
       - name: Build edge image (arm/v7, riscv64)
-        if: steps.edge.outputs.exists == 'true'
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7.2.0
         with:
           context: .
