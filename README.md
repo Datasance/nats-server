@@ -1,10 +1,10 @@
 # NATS Server for Eclipse ioFog
 
-[![CI](https://github.com/Datasance/nats-server/actions/workflows/ci.yml/badge.svg)](https://github.com/Datasance/nats-server/actions/workflows/ci.yml)
-[![Release](https://img.shields.io/github/v/release/Datasance/nats-server?include_prereleases)](https://github.com/Datasance/nats-server/releases)
+[![CI](https://github.com/eclipse-iofog/nats-server/actions/workflows/ci.yml/badge.svg)](https://github.com/eclipse-iofog/nats-server/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/eclipse-iofog/nats-server?include_prereleases)](https://github.com/eclipse-iofog/nats-server/releases)
 [![Go](https://img.shields.io/badge/Go-1.26.4-blue.svg)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-EPL--2.0-blue.svg)](LICENSE)
-[![govulncheck](https://github.com/Datasance/nats-server/actions/workflows/govulncheck.yml/badge.svg)](https://github.com/Datasance/nats-server/actions/workflows/govulncheck.yml)
+[![govulncheck](https://github.com/eclipse-iofog/nats-server/actions/workflows/govulncheck.yml/badge.svg)](https://github.com/eclipse-iofog/nats-server/actions/workflows/govulncheck.yml)
 
 **Upstream:** [eclipse-iofog/nats-server](https://github.com/eclipse-iofog/nats-server) · **Datasance distribution:** [Datasance/nats-server](https://github.com/Datasance/nats-server)
 
