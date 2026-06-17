@@ -32,6 +32,26 @@ COPY --from=user-stage /home/runner /staging/home/runner
 COPY --from=user-stage /etc/ssl/certs/ca-bundle.crt /staging/etc/ssl/certs/ca-bundle.crt
 COPY --from=user-stage /etc/pki/tls/certs/ca-bundle.crt /staging/etc/pki/tls/certs/ca-bundle.crt
 COPY --from=user-stage /usr/share/zoneinfo /staging/usr/share/zoneinfo
+# curl-minimal and grep from ubi-minimal base (do not install full curl — conflicts with curl-minimal).
+COPY --from=user-stage /usr/bin/curl /staging/usr/bin/curl
+COPY --from=user-stage /usr/bin/grep /staging/usr/bin/grep
+COPY --from=user-stage /usr/lib64/libcurl.so.4 /staging/usr/lib64/libcurl.so.4
+COPY --from=user-stage /usr/lib64/libc.so.6 /staging/usr/lib64/libc.so.6
+COPY --from=user-stage /usr/lib64/libnghttp2.so.14 /staging/usr/lib64/libnghttp2.so.14
+COPY --from=user-stage /usr/lib64/libssl.so.3 /staging/usr/lib64/libssl.so.3
+COPY --from=user-stage /usr/lib64/libcrypto.so.3 /staging/usr/lib64/libcrypto.so.3
+COPY --from=user-stage /usr/lib64/libgssapi_krb5.so.2 /staging/usr/lib64/libgssapi_krb5.so.2
+COPY --from=user-stage /usr/lib64/libkrb5.so.3 /staging/usr/lib64/libkrb5.so.3
+COPY --from=user-stage /usr/lib64/libk5crypto.so.3 /staging/usr/lib64/libk5crypto.so.3
+COPY --from=user-stage /usr/lib64/libcom_err.so.2 /staging/usr/lib64/libcom_err.so.2
+COPY --from=user-stage /usr/lib64/libz.so.1 /staging/usr/lib64/libz.so.1
+COPY --from=user-stage /usr/lib64/libkrb5support.so.0 /staging/usr/lib64/libkrb5support.so.0
+COPY --from=user-stage /usr/lib64/libkeyutils.so.1 /staging/usr/lib64/libkeyutils.so.1
+COPY --from=user-stage /usr/lib64/libresolv.so.2 /staging/usr/lib64/libresolv.so.2
+COPY --from=user-stage /usr/lib64/libselinux.so.1 /staging/usr/lib64/libselinux.so.1
+COPY --from=user-stage /usr/lib64/libpcre2-8.so.0 /staging/usr/lib64/libpcre2-8.so.0
+COPY --from=user-stage /usr/lib64/libpcre.so.1 /staging/usr/lib64/libpcre.so.1
+COPY --from=user-stage /usr/lib64/libsigsegv.so.2 /staging/usr/lib64/libsigsegv.so.2
 
 # Final image: UBI 9 micro
 # ubi9/ubi-micro — sha256:59daac603227814ee7fe5cde69ac5ec2815b361c7cb1b2bc9ed3f55673499d38

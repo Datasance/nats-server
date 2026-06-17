@@ -43,7 +43,7 @@ make security-code     # gosec on ./cmd/... ./internal/...
 make vulncheck         # govulncheck + go mod verify
 ```
 
-CI runs the same gates on PR and push to **`develop`**, plus a Docker build smoke test for UBI (amd64/arm64) and edge (arm/v7, riscv64) with **`push: false`**.
+CI runs the same gates on PR and push to **`develop`**, plus a Docker runtime smoke test on all four platforms (build, start with `test/fixtures/ci/server.conf`, verify `/healthz` from host and in-container `curl`).
 
 ## Pull requests
 

@@ -54,7 +54,8 @@ When an account is removed from the JWT resolver directory, NATS no longer accep
 | linux/arm/v7, linux/riscv64 | `Dockerfile.edge` | Alpine 3.22 | same manifest tag |
 
 - **User**: non-root `runner` (uid 10000).
-- **Production binaries**: `iofog-nats` (entrypoint) and `nats-server` v2.14.2 only — **no nats-cli** in published images.
+- **Production binaries**: `iofog-nats` (entrypoint), `nats-server` v2.14.2, **`curl`**, and **`grep`** for in-container healthchecks. **No nats-cli** in published images.
+- **Healthcheck**: UBI has no shell — use exec form, e.g. `["CMD", "/usr/bin/curl", "-f", "http://127.0.0.1:8222/healthz"]`. Edge images include `/bin/sh` for `CMD-SHELL` (e.g. `curl … | grep -q`).
 - **Release tags** (on `v*` git tag only): `:semver` (e.g. `:2.14.2`), `:latest`, and `:main` (same digest).
 
 Use **`Dockerfile.dev`** locally when you need nats-cli for debugging; it is not published to GHCR.
@@ -63,7 +64,7 @@ Use **`Dockerfile.dev`** locally when you need nats-cli for debugging; it is not
 
 | Workflow | Purpose |
 |----------|---------|
-| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Lint, test, Docker build smoke (4 platforms, push disabled) |
+| [`.github/workflows/ci.yml`](.github/workflows/ci.yml) | Lint, test, Docker runtime smoke per arch (`/healthz` via host and in-container `curl`) |
 | [`.github/workflows/govulncheck.yml`](.github/workflows/govulncheck.yml) | Weekly dependency vulnerability scan |
 | [`.github/workflows/release.yml`](.github/workflows/release.yml) | Multi-arch GHCR publish on `v*` tag push |
 
