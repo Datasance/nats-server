@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.3] - 2026-07-04
+
+### Changed
+
+- Embedded **nats-server v2.14.3** (from v2.14.2).
+
+### Security
+
+- Upstream patch for [GHSA-hmmp-q8cx-v964](https://github.com/nats-io/nats-server/security/advisories/GHSA-hmmp-q8cx-v964) (`no_auth_user` connection restriction bypass); see [nats-server v2.14.3](https://github.com/nats-io/nats-server/releases/tag/v2.14.3) for full upstream fixes (JWT claim updates, JetStream/Raft stability, leaf/service import fixes).
+
 ## [2.14.2] - 2026-06-15
 
 ### Added

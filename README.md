@@ -8,7 +8,7 @@
 
 **Upstream:** [eclipse-iofog/nats-server](https://github.com/eclipse-iofog/nats-server) · **Datasance distribution:** [Datasance/nats-server](https://github.com/Datasance/nats-server)
 
-NATS server image for use on **Eclipse ioFog**  and **Datasance PoT** (Kubernetes or edge with Edgelet). Config, account config, and TLS certs are provided via **volume mounts**; the wrapper starts [nats-server](https://github.com/nats-io/nats-server) v2.14.2 and watches for file changes, triggering reload (SIGHUP) or restart (leaf mode, non-TLS changes) as appropriate.
+NATS server image for use on **Eclipse ioFog**  and **Datasance PoT** (Kubernetes or edge with Edgelet). Config, account config, and TLS certs are provided via **volume mounts**; the wrapper starts [nats-server](https://github.com/nats-io/nats-server) v2.14.3 and watches for file changes, triggering reload (SIGHUP) or restart (leaf mode, non-TLS changes) as appropriate.
 
 Both **Kubernetes** (ioFog-controller mounting ConfigMaps/Secrets) and **Edgelet** (Edgelet binding config) use the same contract: mount the server config, account config, and TLS directory at the paths below (or override with env vars).
 
@@ -50,13 +50,13 @@ When an account is removed from the JWT resolver directory, NATS no longer accep
 
 | Platform | Dockerfile | Base | Registry example |
 |----------|------------|------|------------------|
-| linux/amd64, linux/arm64 | `Dockerfile` | UBI 9 micro (Red Hat certified) | `ghcr.io/datasance/nats:2.14.2` |
+| linux/amd64, linux/arm64 | `Dockerfile` | UBI 9 micro (Red Hat certified) | `ghcr.io/datasance/nats:2.14.3` |
 | linux/arm/v7, linux/riscv64 | `Dockerfile.edge` | Alpine 3.22 | same manifest tag |
 
 - **User**: non-root `runner` (uid 10000).
-- **Production binaries**: `iofog-nats` (entrypoint), `nats-server` v2.14.2, **`curl`**, and **`grep`** for in-container healthchecks. **No nats-cli** in published images.
+- **Production binaries**: `iofog-nats` (entrypoint), `nats-server` v2.14.3, **`curl`**, and **`grep`** for in-container healthchecks. **No nats-cli** in published images.
 - **Healthcheck**: UBI has no shell — use exec form, e.g. `["CMD", "/usr/bin/curl", "-f", "http://127.0.0.1:8222/healthz"]`. Edge images include `/bin/sh` for `CMD-SHELL` (e.g. `curl … | grep -q`).
-- **Release tags** (on `v*` git tag only): `:semver` (e.g. `:2.14.2`), `:latest`, and `:main` (same digest).
+- **Release tags** (on `v*` git tag only): `:semver` (e.g. `:2.14.3`), `:latest`, and `:main` (same digest).
 
 Use **`Dockerfile.dev`** locally when you need nats-cli for debugging; it is not published to GHCR.
 

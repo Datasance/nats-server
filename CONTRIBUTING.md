@@ -1,6 +1,6 @@
 # Contributing to NATS Server wrapper
 
-Thank you for contributing to the **ioFog NATS wrapper image** (`github.com/eclipse-iofog/nats-server`). The wrapper binary is **`iofog-nats`**; it execs upstream **nats-server v2.14.2** as a child process with config watch, JWT sync, JetStream reconcile, and claims push.
+Thank you for contributing to the **ioFog NATS wrapper image** (`github.com/eclipse-iofog/nats-server`). The wrapper binary is **`iofog-nats`**; it execs upstream **nats-server v2.14.3** as a child process with config watch, JWT sync, JetStream reconcile, and claims push.
 
 ## Dual-mirror workflow
 
@@ -88,7 +88,7 @@ Workflows SHA-pin third-party actions with a version comment (e.g. `# v4`). When
 Container images publish **only** on **`v*`** git tags (not ordinary `develop` pushes). For dual-mirror releases:
 
 1. Merge to **`develop`** on both remotes at the **same SHA**.
-2. Create identical annotated tags (e.g. **`v2.14.2`**) on both remotes and push.
+2. Create identical annotated tags (e.g. **`v2.14.3`**) on both remotes and push.
 3. Verify both **release.yml** workflows succeed and tags `:semver`, `:latest`, `:main` exist on each registry.
 
 Record published image digests in CHANGELOG release notes when tagging.
