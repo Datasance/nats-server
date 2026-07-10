@@ -59,8 +59,8 @@ CI runs the same gates on PR and push to **`develop`**, plus a Docker runtime sm
 
 Production Dockerfiles pin base images by digest:
 
-- **`Dockerfile`** — `golang:1.26.4-alpine`, UBI 9 minimal/micro (amd64/arm64).
-- **`Dockerfile.edge`** — `golang:1.26.4-alpine`, `alpine:3.22` (arm/v7, riscv64).
+- **`Dockerfile`** — `golang:1.26.5-alpine`, UBI 9 minimal/micro (amd64/arm64).
+- **`Dockerfile.edge`** — `golang:1.26.5-alpine`, `alpine:3.22` (arm/v7, riscv64).
 
 When bumping a base image:
 

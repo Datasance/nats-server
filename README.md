@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/eclipse-iofog/nats-server/actions/workflows/ci.yml/badge.svg)](https://github.com/eclipse-iofog/nats-server/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/eclipse-iofog/nats-server?include_prereleases)](https://github.com/eclipse-iofog/nats-server/releases)
-[![Go](https://img.shields.io/badge/Go-1.26.4-blue.svg)](https://go.dev/)
+[![Go](https://img.shields.io/badge/Go-1.26.5-blue.svg)](https://go.dev/)
 [![License](https://img.shields.io/badge/License-EPL--2.0-blue.svg)](LICENSE)
 [![govulncheck](https://github.com/eclipse-iofog/nats-server/actions/workflows/govulncheck.yml/badge.svg)](https://github.com/eclipse-iofog/nats-server/actions/workflows/govulncheck.yml)
 

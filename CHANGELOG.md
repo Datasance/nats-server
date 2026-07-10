@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.3-1] - 2026-07-10
+
+Wrapper-only release; embedded upstream server unchanged.
+
+### Changed
+
+- Go toolchain **1.26.5** (from 1.26.4) in `go.mod`, CI workflows, and Docker builder stages.
+- **`golang:1.26.5-alpine`** builder image digest pin in `Dockerfile`, `Dockerfile.dev`, and `Dockerfile.edge`.
+- Release workflow (`.github/workflows/release.yml`) — disable setup-go module cache and Docker Buildx GHA layer cache for reproducible cold release builds.
+
+### Embedded server
+
+- **nats-server v2.14.3** (unchanged).
+
 ## [2.14.3] - 2026-07-04
 
 ### Changed
