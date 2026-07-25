@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.3-2] - 2026-07-25
+
+Wrapper-only release; embedded upstream server unchanged.
+
+### Changed
+
+- **`Dockerfile`** (linux/amd64, linux/arm64) — refresh digest pins for **UBI 9 minimal** (`user-stage`, `runtime-staging`) and **UBI 9 micro** (final runtime image).
+
+### Embedded server
+
+- **nats-server v2.14.3** (unchanged).
+
 ## [2.14.3-1] - 2026-07-10
 
 Wrapper-only release; embedded upstream server unchanged.
