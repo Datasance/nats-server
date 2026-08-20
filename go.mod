@@ -1,10 +1,10 @@
 module github.com/eclipse-iofog/nats-server
 
-go 1.26.5
+go 1.26.6
 
 require (
 	github.com/fsnotify/fsnotify v1.10.1
-	github.com/nats-io/nats.go v1.51.0
+	github.com/nats-io/nats.go v1.53.1
 )
 
 require (

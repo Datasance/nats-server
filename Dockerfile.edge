@@ -1,6 +1,6 @@
 # Build iofog-nats wrapper and install nats-server for arm/v7 and riscv64 edge targets.
-# golang:1.26.5-alpine — sha256:3ad57304ad93bbec8548a0437ad9e06a455660655d9af011d58b993f6f615648
-FROM --platform=$BUILDPLATFORM golang:1.26.5-alpine@sha256:0178a641fbb4858c5f1b48e34bdaabe0350a330a1b1149aabd498d0699ff5fb2 AS go-builder
+# golang:1.26.6-alpine — sha256:3ad57304ad93bbec8548a0437ad9e06a455660655d9af011d58b993f6f615648
+FROM  --platform=$BUILDPLATFORM golang:1.26.6-alpine@sha256:3889b425f035be855a72fb4755265311293b6d414521f0a519d819df32222d83 AS go-builder
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
@@ -14,7 +14,7 @@ RUN if [ "${TARGETARCH}" = "arm" ] && [ "${TARGETVARIANT}" = "v7" ]; then export
     GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o iofog-nats ./cmd/iofog-nats
 
 RUN if [ "${TARGETARCH}" = "arm" ] && [ "${TARGETVARIANT}" = "v7" ]; then export GOARM=7; fi && \
-    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/nats-io/nats-server/v2@v2.14.3
+    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/nats-io/nats-server/v2@v2.14.5
 
 RUN mkdir -p /out && \
     find /go/bin -name "nats-server" -type f -exec cp {} /out/nats-server \;

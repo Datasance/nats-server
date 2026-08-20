@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.14.5] - 2026-08-20
+
+### Changed
+
+- Embedded **nats-server v2.14.5** (from v2.14.3); includes upstream [v2.14.4](https://github.com/nats-io/nats-server/releases/tag/v2.14.4) and [v2.14.5](https://github.com/nats-io/nats-server/releases/tag/v2.14.5) fixes.
+- Go toolchain **1.26.6** (from 1.26.5) in `go.mod`, CI workflows, and Docker builder stages.
+- **`golang:1.26.6-alpine`** builder image digest pin in `Dockerfile`, `Dockerfile.dev`, and `Dockerfile.edge`.
+- **`Dockerfile`** (linux/amd64, linux/arm64) — refresh digest pins for **UBI 9 minimal** and **UBI 9 micro**.
+- Wrapper dependency **`github.com/nats-io/nats.go` v1.53.1** (from v1.51.0).
+
+### Security
+
+- Upstream [v2.14.4](https://github.com/nats-io/nats-server/releases/tag/v2.14.4) auth and permission fixes, including TLS `verify_and_map` blank-password bypass, `no_auth_user` with auth callouts, and MQTT `$MQTT.>` subscription bypass; see [nats-server compare v2.14.3...v2.14.5](https://github.com/nats-io/nats-server/compare/v2.14.3...v2.14.5) for the full upstream changelog (JetStream stability, monitoring, and leafnode `dial_timeout` in v2.14.5).
+
 ## [2.14.3-2] - 2026-07-25
 
 Wrapper-only release; embedded upstream server unchanged.

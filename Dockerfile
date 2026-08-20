@@ -1,6 +1,6 @@
 # Build iofog-nats wrapper and install nats-server
-# golang:1.26.5-alpine
-FROM  --platform=$BUILDPLATFORM  golang:1.26.5-alpine@sha256:0178a641fbb4858c5f1b48e34bdaabe0350a330a1b1149aabd498d0699ff5fb2 AS go-builder
+# golang:1.26.6-alpine
+FROM  --platform=$BUILDPLATFORM golang:1.26.6-alpine@sha256:3889b425f035be855a72fb4755265311293b6d414521f0a519d819df32222d83 AS go-builder
 ARG TARGETOS
 ARG TARGETARCH
 ARG BUILDPLATFORM
@@ -12,20 +12,20 @@ ENV CGO_ENABLED=0
 
 RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o iofog-nats ./cmd/iofog-nats
 
-RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/nats-io/nats-server/v2@v2.14.3
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/nats-io/nats-server/v2@v2.14.5
 
 RUN mkdir -p /out && \
     find /go/bin -name "nats-server" -type f -exec cp {} /out/nats-server \;
 
 # Create non-root user and writable dirs for pid file and JetStream store
 # ubi9/ubi-minimal — sha256:850143255ee0d1915f09aaa09f6ed31f24086ba605c323badfbefa95b8c52b0e
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:2e8edce823a48e51858f1fad3ff4cbf6875ce8a3f86b9eecf298bc2050c8652a AS user-stage
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:8eb2830d0936237fc13a1f2f7e45aecf90d69043380ad167fad0343632937f41 AS user-stage
 RUN microdnf install -y ca-certificates shadow-utils && microdnf install -y tzdata && microdnf reinstall -y tzdata && microdnf clean all -y
 RUN useradd --uid 10000 --create-home runner
 RUN mkdir -p /home/runner/run /home/runner/data /home/runner/bin /home/runner/nats/jwt && chown -R runner:runner /home/runner
 
 # Stage runtime files so final image can use a single COPY layer
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:2e8edce823a48e51858f1fad3ff4cbf6875ce8a3f86b9eecf298bc2050c8652a AS runtime-staging
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:8eb2830d0936237fc13a1f2f7e45aecf90d69043380ad167fad0343632937f41 AS runtime-staging
 COPY --from=user-stage /etc/passwd /staging/etc/passwd
 COPY --from=user-stage /etc/group /staging/etc/group
 COPY --from=user-stage /home/runner /staging/home/runner
@@ -55,7 +55,7 @@ COPY --from=user-stage /usr/lib64/libsigsegv.so.2 /staging/usr/lib64/libsigsegv.
 
 # Final image: UBI 9 micro
 # ubi9/ubi-micro — sha256:b498b3ea26111ab4b81d65139f2ebd2ef9a2abb7a4588b7fdcc54889f95e9caa
-FROM registry.access.redhat.com/ubi9/ubi-micro@sha256:b1e86b97028b8fcfb6d85f997c39e6b6b67496163ef8d80d243220a4918e8bef
+FROM registry.access.redhat.com/ubi9/ubi-micro@sha256:7e7f79ab747bf2b452e3043dd89f388e92be4c7fdcc8b815b58adf6c99c39c95
 
 ARG OCI_SOURCE_REPO
 ARG OCI_VERSION
