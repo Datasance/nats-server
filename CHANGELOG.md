@@ -5,12 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.14.7] - 2026-09-17
+## [2.14.7] - 2026-09-26
 
 ### Changed
 
 - Embedded **nats-server v2.14.7** (from v2.14.5) in `Dockerfile`, `Dockerfile.dev`, and `Dockerfile.edge`; includes upstream [v2.14.6](https://github.com/nats-io/nats-server/releases/tag/v2.14.6) and [v2.14.7](https://github.com/nats-io/nats-server/releases/tag/v2.14.7) fixes.
 - **`Dockerfile`** (linux/amd64, linux/arm64) — refresh digest pins for **UBI 9 minimal** (`user-stage`, `runtime-staging`) and **UBI 9 micro** (final runtime image).
+- **`Dockerfile.edge`** (linux/armv7, linux/riscv64) — refresh digest pins for **alpine 3.22** (`runtime-staging`).
 - Docs (`README.md`, `CONTRIBUTING.md`) — version references updated to **v2.14.7**.
 
 ### Fixed
