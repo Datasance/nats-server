@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.0] - 2026-09-26
+
+### Changed
+
+- Embedded **nats-server v2.15.0** (from v2.14.7) in `Dockerfile`, `Dockerfile.dev`, and `Dockerfile.edge`; see [nats-server compare v2.14.7...v2.15.0](https://github.com/nats-io/nats-server/compare/v2.14.7...v2.15.0) and the upstream [v2.15.0 release notes](https://github.com/nats-io/nats-server/releases/tag/v2.15.0).
+- Wrapper dependency **`github.com/nats-io/nats.go` v1.54.0** (from v1.53.1) for claims push and JetStream account purge.
+- Docs (`README.md`, `CONTRIBUTING.md`) — version references updated to **v2.15.0**.
+
+### Notes
+
+- Cluster operators should read the upstream [Upgrade to NATS 2.15](https://docs.nats.io/release-notes/upgrade-to-2.15) guide (desired-state metalayer, default per-stream consumer limit of 1000, leaf/sync behavior). No wrapper code or env contract changes are required.
+
+
 ## [2.14.7] - 2026-09-26
 
 ### Changed

@@ -1,6 +1,6 @@
 # Contributing to NATS Server wrapper
 
-Thank you for contributing to the **ioFog NATS wrapper image** (`github.com/eclipse-iofog/nats-server`). The wrapper binary is **`iofog-nats`**; it execs upstream **nats-server v2.14.7** as a child process with config watch, JWT sync, JetStream reconcile, and claims push.
+Thank you for contributing to the **ioFog NATS wrapper image** (`github.com/eclipse-iofog/nats-server`). The wrapper binary is **`iofog-nats`**; it execs upstream **nats-server v2.15.0** as a child process with config watch, JWT sync, JetStream reconcile, and claims push.
 
 ## Dual-mirror workflow
 
