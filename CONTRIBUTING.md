@@ -1,6 +1,6 @@
 # Contributing to NATS Server wrapper
 
-Thank you for contributing to the **ioFog NATS wrapper image** (`github.com/eclipse-iofog/nats-server`). The wrapper binary is **`iofog-nats`**; it execs upstream **nats-server v2.15.0** as a child process with config watch, JWT sync, JetStream reconcile, and claims push.
+Thank you for contributing to the **ioFog NATS wrapper image** (`github.com/eclipse-iofog/nats-server`). The wrapper binary is **`iofog-nats`**; it execs upstream **nats-server v2.15.1** as a child process with config watch, JWT sync, JetStream reconcile, and claims push.
 
 ## Dual-mirror workflow
 
@@ -59,8 +59,8 @@ CI runs the same gates on PR and push to **`develop`**, plus a Docker runtime sm
 
 Production Dockerfiles pin base images by digest:
 
-- **`Dockerfile`** — `golang:1.26.6-alpine`, UBI 9 minimal/micro (amd64/arm64).
-- **`Dockerfile.edge`** — `golang:1.26.6-alpine`, `alpine:3.22` (arm/v7, riscv64).
+- **`Dockerfile`** — `golang:1.26.9-alpine`, UBI 9 minimal/micro (amd64/arm64).
+- **`Dockerfile.edge`** — `golang:1.26.9-alpine`, `alpine:3.22` (arm/v7, riscv64).
 
 When bumping a base image:
 

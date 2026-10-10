@@ -1,6 +1,6 @@
 # Build iofog-nats wrapper and install nats-server
-# golang:1.26.6-alpine
-FROM  --platform=$BUILDPLATFORM golang:1.26.6-alpine@sha256:3889b425f035be855a72fb4755265311293b6d414521f0a519d819df32222d83 AS go-builder
+# golang:1.26.9-alpine
+FROM  --platform=$BUILDPLATFORM golang:1.26.9-alpine@sha256:3082400e369fa24d5fc60bca20edab3f6d604e0c5a690ec66b295eff4dd87ade AS go-builder
 ARG TARGETOS
 ARG TARGETARCH
 ARG BUILDPLATFORM
@@ -12,20 +12,20 @@ ENV CGO_ENABLED=0
 
 RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o iofog-nats ./cmd/iofog-nats
 
-RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/nats-io/nats-server/v2@v2.15.0
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/nats-io/nats-server/v2@v2.15.1
 
 RUN mkdir -p /out && \
     find /go/bin -name "nats-server" -type f -exec cp {} /out/nats-server \;
 
 # Create non-root user and writable dirs for pid file and JetStream store
 # ubi9/ubi-minimal — sha256:850143255ee0d1915f09aaa09f6ed31f24086ba605c323badfbefa95b8c52b0e
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:8ebe2ad8fdf3cab3e5a53c1edc69194c98209cfadab24b884f4ad9ebcf7bbbfc AS user-stage
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:5ed244b62bbf4095080144d9d35eb8fcd3d39a9801f94aadd63b9d10978a01ae AS user-stage
 RUN microdnf install -y ca-certificates shadow-utils && microdnf install -y tzdata && microdnf reinstall -y tzdata && microdnf clean all -y
 RUN useradd --uid 10000 --create-home runner
 RUN mkdir -p /home/runner/run /home/runner/data /home/runner/bin /home/runner/nats/jwt && chown -R runner:runner /home/runner
 
 # Stage runtime files so final image can use a single COPY layer
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:8ebe2ad8fdf3cab3e5a53c1edc69194c98209cfadab24b884f4ad9ebcf7bbbfc AS runtime-staging
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:5ed244b62bbf4095080144d9d35eb8fcd3d39a9801f94aadd63b9d10978a01ae AS runtime-staging
 COPY --from=user-stage /etc/passwd /staging/etc/passwd
 COPY --from=user-stage /etc/group /staging/etc/group
 COPY --from=user-stage /home/runner /staging/home/runner

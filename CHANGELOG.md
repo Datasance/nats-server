@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.1] - 2026-10-10
+
+### Added
+
+- `docs/nats-wrapper.md` — how `iofog-nats` starts `nats-server`, watches mounts, and applies config, TLS, and JWT changes on a Kubernetes hub and on an edge node. Linked from `README.md`.
+
+### Changed
+
+- Embedded **nats-server v2.15.1** (from v2.15.0) in `Dockerfile`, `Dockerfile.dev`, and `Dockerfile.edge`; see [nats-server compare v2.15.0...v2.15.1](https://github.com/nats-io/nats-server/compare/v2.15.0...v2.15.1) and the upstream [v2.15.1 release notes](https://github.com/nats-io/nats-server/releases/tag/v2.15.1).
+- Go toolchain **1.26.9** (from 1.26.6) in `go.mod`, CI workflows (`ci.yml`, `govulncheck.yml`, `release.yml`), and Docker builder stages.
+- **`golang:1.26.9-alpine`** builder digest pin in `Dockerfile` and `Dockerfile.edge`. `Dockerfile.dev` tracks the same tag.
+- **`Dockerfile`** — refresh the **UBI 9 minimal** digest pin (`user-stage`, `runtime-staging`). UBI 9 micro and Alpine 3.22 pins were already current.
+- Docs (`README.md`, `CONTRIBUTING.md`) — version references updated to **nats-server v2.15.1** and **Go 1.26.9**.
+
+### Security
+
+- Rebuild the wrapper and the embedded `nats-server` with **Go 1.26.9**. That clears the reachable `net/http` findings reported by [govulncheck #20](https://github.com/eclipse-iofog/nats-server/actions/runs/38041695913/job/114183055503) (`jspurge.PurgeAccount` calling `nats.Connect`). Go 1.26.9 is the 8 October 2026 security release; details are in the [release announcement](https://www.openwall.com/lists/oss-security/2026/10/08/9).
+
+### Notes
+
+- On top of the 2.15.0 upgrade guide: `max_ha_assets` is now enforced during stream and consumer placement, scale, and move; the legacy `$GR.` gateway reply prefix used by servers before v2.1.2 is gone; auth-callout `auth_users` bypass issues are fixed. No wrapper code or `NATS_*` env contract changes.
+
 ## [2.15.0] - 2026-09-26
 
 ### Changed
