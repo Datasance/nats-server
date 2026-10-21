@@ -1,6 +1,6 @@
 # Build iofog-nats wrapper and install nats-server
-# golang:1.26.9-alpine
-FROM  --platform=$BUILDPLATFORM golang:1.26.9-alpine@sha256:3082400e369fa24d5fc60bca20edab3f6d604e0c5a690ec66b295eff4dd87ade AS go-builder
+# golang:1.26.10-alpine
+FROM  --platform=$BUILDPLATFORM golang:1.26.10-alpine@sha256:9ce231b28998b32e116927c61aa5c406183061d4f3f2d61b292c88e7f6bdf7ca AS go-builder
 ARG TARGETOS
 ARG TARGETARCH
 ARG BUILDPLATFORM
@@ -18,14 +18,14 @@ RUN mkdir -p /out && \
     find /go/bin -name "nats-server" -type f -exec cp {} /out/nats-server \;
 
 # Create non-root user and writable dirs for pid file and JetStream store
-# ubi9/ubi-minimal — sha256:850143255ee0d1915f09aaa09f6ed31f24086ba605c323badfbefa95b8c52b0e
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:5ed244b62bbf4095080144d9d35eb8fcd3d39a9801f94aadd63b9d10978a01ae AS user-stage
+# ubi9/ubi-minimal
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:c4c285d42941ebb2bd4da878479008e1e4536bb599aad1dbe568f89de9053661 AS user-stage
 RUN microdnf install -y ca-certificates shadow-utils && microdnf install -y tzdata && microdnf reinstall -y tzdata && microdnf clean all -y
 RUN useradd --uid 10000 --create-home runner
 RUN mkdir -p /home/runner/run /home/runner/data /home/runner/bin /home/runner/nats/jwt && chown -R runner:runner /home/runner
 
 # Stage runtime files so final image can use a single COPY layer
-FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:5ed244b62bbf4095080144d9d35eb8fcd3d39a9801f94aadd63b9d10978a01ae AS runtime-staging
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:c4c285d42941ebb2bd4da878479008e1e4536bb599aad1dbe568f89de9053661 AS runtime-staging
 COPY --from=user-stage /etc/passwd /staging/etc/passwd
 COPY --from=user-stage /etc/group /staging/etc/group
 COPY --from=user-stage /home/runner /staging/home/runner
@@ -54,8 +54,8 @@ COPY --from=user-stage /usr/lib64/libpcre.so.1 /staging/usr/lib64/libpcre.so.1
 COPY --from=user-stage /usr/lib64/libsigsegv.so.2 /staging/usr/lib64/libsigsegv.so.2
 
 # Final image: UBI 9 micro
-# ubi9/ubi-micro — sha256:b498b3ea26111ab4b81d65139f2ebd2ef9a2abb7a4588b7fdcc54889f95e9caa
-FROM registry.access.redhat.com/ubi9/ubi-micro@sha256:7a0454cbd9bd847e8f6a63b6f0254a6efbeb6e0ed71a5d824a4f6cccbe626650
+# ubi9/ubi-micro
+FROM registry.access.redhat.com/ubi9/ubi-micro@sha256:5be877a2a280ae36eb9ab80ca4efb28bbf77c57abbba38137cdc37a03b8465e6
 
 ARG OCI_SOURCE_REPO
 ARG OCI_VERSION

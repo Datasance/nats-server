@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.1-1] - 2026-10-21
+
+Wrapper-only release; embedded upstream server unchanged.
+
+### Changed
+
+- Go toolchain **1.26.10** (from 1.26.9) in `go.mod`, CI workflows (`ci.yml`, `govulncheck.yml`, `release.yml`), and Docker builder stages.
+- **`golang:1.26.10-alpine`** builder digest pin in `Dockerfile` and `Dockerfile.edge`. `Dockerfile.dev` tracks the same tag.
+- **`Dockerfile`** — refresh digest pins for **UBI 9 minimal** (`user-stage`, `runtime-staging`) and **UBI 9 micro** (final runtime image).
+- Docs (`README.md`, `CONTRIBUTING.md`) — Go toolchain references updated to **1.26.10**. Image tag examples updated to **2.15.1-1**.
+
+### Security
+
+- Rebuild the wrapper and the embedded **nats-server v2.15.1** with **Go 1.26.10** so `crypto/x509` `Certificate.Verify` distrusts the compromised intermediates in [GO-2026-6809](https://pkg.go.dev/vuln/GO-2026-6809) ([CVE-2026-111943](https://pkg.go.dev/vuln/GO-2026-6809)). Fixed in Go before 1.26.10.
+
+### Embedded server
+
+- **nats-server v2.15.1** (unchanged). No wrapper code or `NATS_*` env contract changes.
+
 ## [2.15.1] - 2026-10-10
 
 ### Added

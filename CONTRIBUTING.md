@@ -59,14 +59,14 @@ CI runs the same gates on PR and push to **`develop`**, plus a Docker runtime sm
 
 Production Dockerfiles pin base images by digest:
 
-- **`Dockerfile`** — `golang:1.26.9-alpine`, UBI 9 minimal/micro (amd64/arm64).
-- **`Dockerfile.edge`** — `golang:1.26.9-alpine`, `alpine:3.22` (arm/v7, riscv64).
+- **`Dockerfile`** — `golang:1.26.10-alpine`, UBI 9 minimal/micro (amd64/arm64).
+- **`Dockerfile.edge`** — `golang:1.26.10-alpine`, `alpine:3.22` (arm/v7, riscv64).
 
 When bumping a base image:
 
 1. Pull the new tag and note its **`sha256:`** digest.
 2. Update the **`FROM ...@sha256:...`** line in the relevant Dockerfile(s).
-3. Update the matching comment line above each `FROM` (edgelet pattern — digest documented in comment and pin).
+3. Leave the comment above each `FROM` as the image name only. The digest belongs on the `FROM` line.
 4. Rebuild locally: `make docker-build` and/or `docker buildx build -f Dockerfile.edge ...`.
 5. Confirm CI docker-build-smoke job passes on your PR.
 
