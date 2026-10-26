@@ -1,6 +1,6 @@
 # How the NATS wrapper works
 
-`iofog-nats` is the container entrypoint. It starts upstream `nats-server` v2.15.1 as a child process, watches the files the platform mounts into the container, and applies those changes with `SIGHUP`, a restart, or a JWT sync. The same binary runs on a Kubernetes control-plane hub and on an edge node (Eclipse ioFog Agent or Datasance PoT Edgelet). There is no PoT, ioFog, or Kubernetes branch in the wrapper. The platforms differ only in who writes the files and how they appear in the container.
+`iofog-nats` is the container entrypoint. It starts upstream `nats-server` v2.15.2 as a child process, watches the files the platform mounts into the container, and applies those changes with `SIGHUP`, a restart, or a JWT sync. The same binary runs on a Kubernetes control-plane hub and on an edge node (Eclipse ioFog Agent or Datasance PoT Edgelet). There is no PoT, ioFog, or Kubernetes branch in the wrapper. The platforms differ only in who writes the files and how they appear in the container.
 
 This page describes the wrapper in this repository (`cmd/iofog-nats` and `internal/*`). Controller and operator behavior is included only where it explains which files and environment variables the wrapper actually sees.
 

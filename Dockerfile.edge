@@ -1,6 +1,6 @@
 # Build iofog-nats wrapper and install nats-server for arm/v7 and riscv64 edge targets.
 # golang:1.26.10-alpine
-FROM  --platform=$BUILDPLATFORM golang:1.26.10-alpine@sha256:9ce231b28998b32e116927c61aa5c406183061d4f3f2d61b292c88e7f6bdf7ca AS go-builder
+FROM  --platform=$BUILDPLATFORM golang:1.26.10-alpine@sha256:27f2d3b83cfc5803c8078f8e730af0f7c431bf067afaec8f60a36fb763187cba AS go-builder
 ARG TARGETOS
 ARG TARGETARCH
 ARG TARGETVARIANT
@@ -14,13 +14,13 @@ RUN if [ "${TARGETARCH}" = "arm" ] && [ "${TARGETVARIANT}" = "v7" ]; then export
     GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -trimpath -ldflags="-s -w" -o iofog-nats ./cmd/iofog-nats
 
 RUN if [ "${TARGETARCH}" = "arm" ] && [ "${TARGETVARIANT}" = "v7" ]; then export GOARM=7; fi && \
-    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/nats-io/nats-server/v2@v2.15.1
+    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go install github.com/nats-io/nats-server/v2@v2.15.2
 
 RUN mkdir -p /out && \
     find /go/bin -name "nats-server" -type f -exec cp {} /out/nats-server \;
 
 # alpine:3.22
-FROM alpine:3.22@sha256:5291449c3df73caf6ed85e649dec1b9e818b39a5d8c871e97afc13e9cd5e8fa8 AS runtime-staging
+FROM alpine:3.22@sha256:2e0b81d60597f449baa56dc25d355367869d2dca4cd57e866f1e2b52af3eb55f AS runtime-staging
 RUN apk add --no-cache ca-certificates tzdata shadow curl grep && \
     adduser -D -u 10000 -h /home/runner runner && \
     mkdir -p /home/runner/run /home/runner/data /home/runner/bin /home/runner/nats/jwt && \

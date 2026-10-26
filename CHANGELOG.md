@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.2] - 2026-10-26
+
+### Changed
+
+- Embedded **nats-server v2.15.2** (from v2.15.1) in `Dockerfile`, `Dockerfile.dev`, and `Dockerfile.edge`; see [nats-server compare v2.15.1...v2.15.2](https://github.com/nats-io/nats-server/compare/v2.15.1...v2.15.2) and the upstream [v2.15.2 release notes](https://github.com/nats-io/nats-server/releases/tag/v2.15.2).
+- **`golang:1.26.10-alpine`** builder digest pin refreshed in `Dockerfile` and `Dockerfile.edge`. `Dockerfile.dev` still tracks the tag.
+- **`Dockerfile`** — refresh the **UBI 9 minimal** digest pin (`user-stage`, `runtime-staging`). UBI 9 micro was already current.
+- **`Dockerfile.edge`** — refresh the **alpine 3.22** digest pin (`runtime-staging`).
+- Docs (`README.md`, `CONTRIBUTING.md`, `docs/nats-wrapper.md`) — version references updated to **nats-server v2.15.2**.
+
+### Security
+
+- Upstream v2.15.2 fixes auth-callout allowed connection types, a queue-subscription weight amplification in the sublist, OCSP responses bound to the wrong certificate serial, leafnode ACLs implicitly allowing `$MQTT.>`, and MQTT OCSP ignoring `ocsp_peer`.
+
+### Notes
+
+- Go toolchain stays **1.26.10**. Upstream release binaries use Go 1.27.3 for the same `crypto/x509` distrust ([GO-2026-6809](https://pkg.go.dev/vuln/GO-2026-6809)); this image already has that fix from 2.15.1-1. No wrapper code or `NATS_*` env contract changes.
+- Leafnode ACLs no longer override allow/deny lists to allow `$MQTT.>`. Fleets that relied on that implicit allow need an explicit MQTT permission.
+
 ## [2.15.1-1] - 2026-10-21
 
 Wrapper-only release; embedded upstream server unchanged.
