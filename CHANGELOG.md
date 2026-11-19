@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.15.3] - 2026-11-19
+
+### Changed
+
+- Embedded **nats-server v2.15.3** (from v2.15.2) in `Dockerfile`, `Dockerfile.dev`, and `Dockerfile.edge`; see [nats-server compare v2.15.2...v2.15.3](https://github.com/nats-io/nats-server/compare/v2.15.2...v2.15.3) and the upstream [v2.15.3 release notes](https://github.com/nats-io/nats-server/releases/tag/v2.15.3).
+- Embedded `nats-server` is installed with `-trimpath -ldflags="-s -w"`, the same strip flags as `iofog-nats`.
+- Docs (`README.md`, `CONTRIBUTING.md`, `docs/nats-wrapper.md`) — version references updated to **nats-server v2.15.3**.
+
+### Notes
+
+- Go toolchain stays **1.26.11**. Upstream release binaries use Go 1.27.4. This image compiles `nats-server` with the image toolchain. No wrapper code or `NATS_*` env contract changes.
+- Server behavior changes for this bump are in the upstream [v2.15.3 release notes](https://github.com/nats-io/nats-server/releases/tag/v2.15.3).
+
 ## [2.15.2] - 2026-10-26
 
 ### Changed

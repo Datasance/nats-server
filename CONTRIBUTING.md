@@ -1,6 +1,6 @@
 # Contributing to NATS Server wrapper
 
-Thank you for contributing to the **ioFog NATS wrapper image** (`github.com/eclipse-iofog/nats-server`). The wrapper binary is **`iofog-nats`**; it execs upstream **nats-server v2.15.2** as a child process with config watch, JWT sync, JetStream reconcile, and claims push.
+Thank you for contributing to the **ioFog NATS wrapper image** (`github.com/eclipse-iofog/nats-server`). The wrapper binary is **`iofog-nats`**; it execs upstream **nats-server v2.15.3** as a child process with config watch, JWT sync, JetStream reconcile, and claims push.
 
 ## Dual-mirror workflow
 
@@ -59,8 +59,8 @@ CI runs the same gates on PR and push to **`develop`**, plus a Docker runtime sm
 
 Production Dockerfiles pin base images by digest:
 
-- **`Dockerfile`** — `golang:1.26.10-alpine`, UBI 9 minimal/micro (amd64/arm64).
-- **`Dockerfile.edge`** — `golang:1.26.10-alpine`, `alpine:3.22` (arm/v7, riscv64).
+- **`Dockerfile`** — `golang:1.26.11-alpine`, UBI 9 minimal/micro (amd64/arm64).
+- **`Dockerfile.edge`** — `golang:1.26.11-alpine`, `alpine:3.22` (arm/v7, riscv64).
 
 When bumping a base image:
 
@@ -81,7 +81,7 @@ Workflows SHA-pin third-party actions with a version comment (e.g. `# v4`). When
 ### Go module and embedded nats-server
 
 - Bump **`go`** in `go.mod` and **`GO_VERSION`** in workflows together.
-- Pin embedded server with `go install github.com/nats-io/nats-server/v2@vX.Y.Z` in Dockerfiles; align git tag and CHANGELOG with that version.
+- Pin embedded server with `go install -trimpath -ldflags="-s -w" github.com/nats-io/nats-server/v2@vX.Y.Z` in Dockerfiles; align git tag and CHANGELOG with that version.
 
 ## Release procedure (maintainers)
 
